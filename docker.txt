@@ -1,0 +1,468 @@
+docker 历史
+	1. 2010dotCloud公司 在 PAAS 领域
+	2. 2013 docker 开源
+	3. 2014.6  Docker 1.0
+	4. 2014.7   C轮 $4000万
+	5. 2015.4   D轮	$9500万
+	
+Docker：
+		Docker is the world's leading software containerization platform.
+	开源 托管在GitHub
+	跨平台 支持Windows Macos  Linux
+	
+Docker 思想
+		集装箱
+		
+		标准化  运输方式  存储方式 API接口
+
+		隔离 
+	
+Docker 镜像   不可以修改的
+		一系列的文件  一层一层存储  联合文件系统  每一层的文件都是只读的
+
+Docker容器   本质就是一个进程
+		只有最上面一层可写的 ，修改完成，读的时候从最上面开始读
+
+Docker仓库
+		hub.docker.com
+		c.163.com    
+	
+Windows 安装Docker
+		Win10 外：https://www.docker.com/products/docker-toolbox
+		Win10  ：http://www.docker.com/products/docker#/windows
+		boot2docker.iso下载地址： http://pan.baidu.com/s/1qYyc0ag
+		
+Macos Docker 安装Docker
+ Yosemite 10.10.3+(2014/6) https://www.docker.com/products/docker#/mac
+
+ 旧版本：    https://www.docker.com/products/docker-toolbox
+
+ Linux Docker 安装Docker
+		RedHat Centos   : http://www.imooc.com/article/16448
+
+ubuntu 安装Docker
+	  打开客户端
+	  检查版本   uname  -r 
+	  切换root账户			su
+	  确保apt 最新版本		apt -get update
+	  安装Docker          apt -get install -y docker.io
+	  docker提供安装方式： curl -s https://get.docker.com|sh
+	  检查版本				docker -version
+	  启动Docker服务        service docker start
+
+
+第一个 Docker镜像
+		docker pull[OPTIONS] NAME[:TAG]    OPTIONS  拉取的参数  Name 表示要拉取的镜像名称  TAG 版本
+		
+		docker images [OPTIONS][REPOSITIOY[:TAG]] 查看本机有哪些镜像  REPOSITIOY镜像名称 :TAG 不指定，默认会拉取最新版本 latest
+
+		docker run[OPTIONS ] IMAGE [:TAG] [COMMAND][args...]    运行项目 
+
+
+Nginx  
+	持久运行的Web容器  前台挂起  后台运行  进入容器内部
+	
+	docker pull hub.c.163.com/library/nginx:latest
+	
+	docker ps  查看当前运行的 服务   
+	
+	Ctrl+C   停 服务
+	
+	docker run  hub.c.163.com/library/nginx  前台启动
+	
+	docker run -d hub.c.163.com/library/nginx      后台运行
+		返回的字符串  代表 容器的Id
+
+	docker exec               进入容器内部
+	
+	docker exec -it f4 bash
+	
+	witch nginx   查一下Nginx 在哪里
+	
+	ps -ef          查看当前运行的 进程 服务
+
+	exit  退出容器
+	
+	docker stop f4    暂停容器
+	
+	netstat  -na|grep  8080   查看端口运行 情况
+
+Docker 运行 Nginx
+
+Docker网络 
+		Docker默认会分配一个独立的Networkspace
+		类型  Bridge   桥接  默认使用
+			  Host		共用主机的地址 
+			  none		没有网络
+
+		端口映射
+			
+
+	docker run -d -p 8080:80 hub.c.163.com/library/nginx    -p映射指定端口    8080主机端口 80 容器端口
+	
+	docker run -d -P hub.c.163.com/library/nginx 			开放所有的端口，映射到随机端口				
+
+
+制作自己的镜像
+	Dockerfile       说明我要怎么制作 docker镜像  步骤
+	
+	docker build  执行Dockerfile里面的命令
+	
+	Jpress   http://jpress.io/     Java开源 应用
+
+
+
+
+	vi Dockerfile 
+	~	from hub.c.163.com/library/tomcat         以Tomcat镜像作为起点
+	~
+	~	MAINTAINER  xxx							镜像的所有者								
+	~	
+	~	COPY jpress.war /usr/local/tomcat/webapps
+	~
+	~
+	~
+			
+			
+		docker build .            	当前目录
+
+		docker build -t jpress:latest .   构建镜像 
+
+
+运行自己的容器
+
+	docker run -d -p 8888:8080 jpress      启动jpress
+
+	docker run -d  -p 3306:3306 -e  MYSQL_ROOT_PASSWORD = 000000 -e  MYSQL_DATABASE = jpress  hub.c.163.com/library/mysql:latest    运行
+
+
+
+
+
+
+ Docker 架构
+ Client  docker build pull run
+ Registry  互联网SASS 服务 
+ Docker_HOST
+		Docker daemon程序  运行容器
+		
+		images
+		
+		Containers 	
+ 
+Docker 命令
+	命令：					用途
+	docker pull				获取image
+	docker build			创建image
+	docker images			列出image
+	docker run				运行container
+	docker ps				列出container
+	docker rm 				删除container
+	docker rmi				删除image
+	docker cp				在host 和 container 之间 拷贝文件
+	docker commit			保存改动为新的 image
+	
+	docker inspect nginx   检查Nginx
+	touch  index.html		新建网页
+	
+	sudo docker ps 			查看docker容器
+	sudo docker exec -it 8be16ff7c665 /bin/bash  进入容器内部
+	
+	dockerfile语法;
+	命令					用途
+	FROM					base image
+	RUN						执行命令
+	ADD						添加文件
+	COPY					拷贝文件
+	CMD						执行命令
+	EXPOSE					暴露端口
+	WORKDIR					指定路径
+	MAINTAINER				维护者
+	ENV						设定环境变量
+	ENTRYPOINT				容器入口
+	USER					指定用户
+	VOLUME					mount point
+第一个Dockerfile
+	FROM alpine:latest		镜像从哪里来的  alpine 基于Linux的image 非常小
+	MAINTAINER xxx			谁的
+	CMD echo 'hello docker'  输出
+
+	docker-compose.yml 常用命令
+	
+	命令		用途
+	build 		本地创建镜像
+	command		覆盖缺省命令
+	depend_on	连接容器
+	ports		暴露端口
+	volumes		卷
+	image		pull 镜像
+	
+	docker-compose ml
+	命令		用途
+	up			启动服务
+	stop		停止服务
+	rm			删除服务中的各个容器
+	logs		观察各个容器的日志
+	ps			列出服务相关的容器
+镜像分层
+		每一行有一个 ID 3432hkjh2
+
+	container layer  RW        可读可写			   RW
+	
+	CMD echo "hello world"		镜像已经存在 只读  RO
+
+
+Volume  docker 存储
+	提供独立于容器之外的持久化存储
+
+	1.   docker run -d --name nginx -v /usr/share/nginx/html nginx        nginx用来访问网页的地址/usr/share/nginx/html 
+
+	daemon 上 无法进入到Kernel目录里面去  
+	screen ~/Library/Containers/com.docker.docker/Data/com.docker.driver.amd64-linux/tty
+	
+	2.   docker run -v $PWD/code:/var/www/html nginx 		本地的目录挂载到容器里面目录
+	docker run -p 80:80 -d  -v $PWD/code:/var/www/html nginx
+
+	3.    docker run  -volumes-from ...   数据文件挂载      把存有数据的容器当做一个Volume 挂载到另一个容器
+	实战;
+		1	mkdir vol3
+		2	cd vol3
+		3	ls
+		4	mkdir data
+		5	docker create -v $PWD/data:/var/mydata --name data_container ubuntu
+		6	docker run -it --volumes-from data_container ubuntu /bin/bash 
+		7	mount
+		8	cd /var/mydata
+		9	ls   
+		10	touch whatever.txt
+		11	按 Ctrl + D (T)  退出容器
+		12	ls
+		13	cd data
+		14	ls
+		15	打印 whatever.txt
+		16
+
+Registry 镜像仓库  实际上是 SASS服务  提供注册 存储 镜像  目的是共享镜像
+
+	术语：
+	English				中文
+	host				宿主机
+	image				镜像
+	container			容器
+	registry			仓库
+	daemon				守护程序
+	client				客户端
+	
+	docker search whalesay
+	docker pull  whalesay
+	docker push  myname/whalesay
+
+	国内仓库  daocloud  时速云  aliyun
+
+docker-compose  多容器
+	Mac / Windows  自带的
+	Linux;  curl https://github,com/docker/compose...
+	
+	docker-compose  分为三层  Nginx > ghost app > mysql
+	
+	docker-compose.yaml
+	
+	ghost-app:
+		build:ghost
+		depends_on:
+			- db
+		ports:
+			"2368:2368"		
+	nginx:
+		build:nginx
+		ports:
+			- "80:80"
+		depends_on:
+			- ghost-app
+	db:
+		image:"mysql:5.7.15"
+
+实战：
+			下载的数据重新定向到docker-compose												Linux		x86_64
+	1.	 curl -L https://github,com/docker/compose/releases/download/1.9.0/docker-compose-$(uname -s)-$(uname -m) > /usr/local/bin/docker-compose
+	2.	ls -l /usr/local/bin/docker-compose					查看是否有
+	3.	chmod a+x /usr/local/bin/docker-compose  			a+x 所有人都可以读写
+	4.	docker -compose  --version							查看docker版本
+	5.	--安装结束
+	 	
+	1.	mkdir ghost
+	2.	cd ghost
+	3.	ls
+	4.	mkdir ghost
+	5.	mkdir nginx
+	6.	mkdir data
+	7.	cd ghost
+	8.	ls
+	9.	cd ghost
+	10.	ls
+	11.	touch Dockerfile
+	12. vi Dockerfile
+	13.		FROM ghost
+	14.		COPY ./config.js /var/lib/ghost/config.js
+	15.		EXPOSE 2368
+	16.		CMD ["npm","start","--production"]
+	17.	Dockerfile 完，保存退出
+	18.	cp ../../backup/ghost/ghost/config.js
+	19. cat config.js
+	20.		var path = require('path'),
+	21.		config;
+	22.		
+	23.		config = {
+	24.			production： {
+	25.				url: 'http://mytestblog.com',
+	26				mail: {},
+	27				database:{
+	28					client: 'mysql',
+	29.					connection: {
+	30.						host: 'db',
+	31.						user:  'ghost',
+	32.						password:  'ghost',
+	33.						database: 'ghost',
+	34.						ports: '3306',
+	35.						charset : 'utf-8'
+	36.						},
+	37.						debug: false
+	38.					},
+	39.				paths: {
+	40.					contentPath: path.join(process.env.GHOST_CONTENT,'/')
+	41.					},
+	42.				server:{
+	43.					host: '0.0.0.0',
+	44.					ports: '2368'
+	45.				}
+	46.			}
+	47.		};
+	48.		module.exports = config.js
+	49.	 config.js 完，保存退出
+	50.	
+	51.	ls  显示 Dockerfile  config.js
+	52.	cd ..
+	53. ls
+	54. cd nginx
+	55.	touch Dockerfile
+	56. vi  Dockerfile
+	57.		FROM nginx
+	58.		COPY nginx.config /etc/nginx/nginx.conf
+	59.		EXPOSE 80
+	60.		:x
+		touch nginx.conf
+		vi nginx
+		worker processes 4;
+		events {worker_connection 1024;}
+		http {
+			server {
+				listen 80;
+				location / {
+					proxy_pass http://ghost-app:2368;
+				}
+			}
+		}
+
+		touch docker-compose.yml
+		
+		vi docker-compose.yml
+
+		version: '2'
+		networks:
+			ghost:
+		services:
+			ghost-app:
+				build: ghost
+				networks: 
+				-ghost
+				depends_on:
+				-db
+				ports:
+				- "2368:2368"
+			nginx:
+				build: nginx
+				networks:
+					- ghost
+				depends_on:
+					- ghost-app
+				ports:
+					- "80:80"
+			db:
+				image: "mysql:5.7.15"
+				networks:
+					-ghost
+				environment:
+					MYSQL_ROOT_PASSWORD:mysqlroot
+					MYSQL_USER: ghost
+					MYSQL_PASSWORD: ghost
+				volumes:
+					- $PWD/data:/var/lib/mysql
+				ports:
+					- "3306:3306"
+
+			ls  显示 data  docker-compose.yml 	ghost 		nginx
+
+			docker-compose up -d
+			docker-compose stop   关闭 docker-compose
+			docker-compose rm  -y
+			
+			docker-compose build
+			
+			google:输入   localhost/ghost
+			完成设置！
+		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
