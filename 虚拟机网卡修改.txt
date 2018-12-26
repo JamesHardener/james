@@ -1,0 +1,147 @@
+sudo root
+	su root
+	1234
+
+Groovy  是什么
+root权限下命令：
+vi /etc/sysconfig/network-scripts/ifcfg-eno16777736
+
+主要配置的是静态获得ip，网关，子网掩码等；
+CentOS7的网卡默认是关闭的，需要开启（或者设置成开机启动）；
+然后启动网络设备（）或者重启系统（reboot）。
+
+ONBOOT=yes
+IPADDRO=192.168.159.3
+PREFIXO=24
+GATEWAYO=102.168.159.2
+HWADDR=00:0C:29:6D:B8:A7
+DNS1=202.102.224.68
+DNS2=114.114.114.114
+IPV6_PEERDNS=yes
+IPV6_PEERROUTES=yes
+
+VI编辑器 hjkl一个键移动光标，esc切换模式，i插入字符，x删除字符，：wq保存退出。
+
+linux下 如何切换到root用户
+
+默认安装完成之后并不知道root用户的密码，那么如何应用root权限呢？
+
+(1)sudo 命令  
+
+xzm@ubuntu:~$  sudo
+
+这样输入当前管理员用户密码就可以得到超级用户的权限。但默认的情况下5分钟root权限就失效了。
+
+(2)sudo -i
+
+xzm@ubuntu:~$  sudo -i
+
+通过这种方法输入当前管理员用户的密码就可以进到root用户。
+
+(3)如果想一直使用root权限，要通过su切换到root用户。
+
+那我们首先要重设置root用户的密码：
+
+xzm@ubuntu:~$  sudo passwd root
+
+这样就可以设置root用户的密码了。
+
+
+(4)之后就可以自由的切换到root用户了
+
+xzm@ubuntu:~$  su
+
+输入root用户的密码即可。
+
+su "king" 或者 exit回到用户权限
+
+
+3、使用NAT模式
+
+虚拟机网络连接使用NAT模式，物理机网络连接使用Vmnet8。
+
+ 
+
+虚拟机设置里面——网络适配器，网络连接选择NAT模式。
+
+虚拟机菜单栏—编辑—虚拟网络编辑器，选择Vmnet8 NAT模式，
+
+1．在最下面子网设置ip为192.168.20.0 子网掩码255.255.255.0
+
+2．NAT设置里面网关IP为192.168.20.2
+
+3．使用本地DHCP服务将IP地址分配给虚拟机不勾选
+
+设置完成后点击应用退出。
+
+ 
+
+物理机网络连接VMNet8 手动设置ip地址 192.168.20.1 子网掩码255.255.255.0
+
+网关和DNS地址为192.168.20.2（即虚拟机NAT的网关地址）
+
+ 
+
+编辑linux网卡eth0的配置文件
+
+#vi /etc/sysconfig/network-scripts/ifcfg-eth0
+
+输入上述命令后回车，打开配置文件，使用方向键移动光标到最后一行，按字母键“O”，进入编辑模式，输入以下内容：
+
+IPADDR=192.168.20.3
+
+NETMASK=255.255.255.0
+
+GATEWAY=192.168.20.2
+
+另外光标移动到”ONBOOT=no”这一行，更改为ONBOOT=yes
+
+“BOOTPROTO=dhcp”，更改为BOOTPROTO=none
+
+完成后，按一下键盘左上角ESC键，输入:wq 在屏幕的左下方可以看到，输入回车保存配置文件。
+
+IPADDR=192.168.159.3
+
+NETMASK=255.255.255.0
+
+GATEWAY=192.168.159.2
+ 
+
+设置DNS地址,运行命令#vi /etc/resolv.conf
+
+光标移动到空行，按“O”键，输入 nameserver 192.168.20.2 退出按ESC键，输入:wq 回车保存配置文件。
+
+重启网络服务 #service network restart
+
+重启之后#ifconfig 查看配置的ip地址，物理机ping这个地址测试是否能通。
+
+ 
+
+虚拟机下 克隆后 网卡失效解决办法
+
+ vi /etc/udev/rules.d/70-persistent-net.rules
+
+把原来的物理地址删除，改网卡名为 eht0
+
+然后 vi /etc/sysconfig/network-scripts/ifcfg-eth0,删除uuid,hwaddr,会自动生成，然后 reboot
+
+修改hostname
+
+vi /etc/sysconfig/network,   然后执行 hostname name, 重登录 exit
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

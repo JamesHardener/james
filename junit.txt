@@ -1,0 +1,268 @@
+Junit4
+
+
+用例测试失败的两种情况：
+
+Failue 一般由单元测试使用的断言方法判断失败所引起的，这表示测试点发现了问题，程序输出和预期不一样。
+Error 是由代码异常引起的，可以是测试代码本身错误，也可能是测试代码的隐藏bug 
+测试用例不是来证明你是对的，而是证明 我们没有错
+
+
+Junit 运行流程
+
+@BeforeClass 修饰的方法会在 所有方法被调用前 执行  该方法是静态的，故测试类被加载后 就会运行 而且内存中只存在一份实例，比较适合加载配置文件
+
+@AfterClass  修饰的方法  通常 用来 对资源 的清理 ，如关闭数据库的连接
+
+@Before 和 @ After 会在每个测试方法的前后 个执行一次
+
+JUnit 常用注解
+
+@Test(expected=ArithmeticException.class)  捕获异常
+@Test(timeout=毫秒) 测试超时 
+
+@Ignore		所修饰的方法会被 测试运行器忽略
+@RunWith  可以更改测试运行器 自定义的需要继承 org.junit.runner.Runner类
+
+
+ 
+测试套件  就是 组织测试类 一起运行的类
+
+	1.写一个作为测试套件 的 入口类   这个类不包含任何其他的方法
+	2.更改测试运行器为 Suite.class
+	3.将要测试的 类作为 数组 传入到 Suite.SuiteClasses({})   
+   
+JUnit参数化设置 
+	1.更改默认的测试运行器为 RunWith(Parameterized.class)
+	2.声明变量 来存储预期值 和结果值
+	3.声明一个返回值 为 Collection 的 公共静态方法， 并使用@Parameters 进行修缮
+	4.为测试类 声明 一个带有参数的公共 构造函数， 并在其中为之声明变量赋值
+
+
+	
+	Maven
+	
+	Maven常用的构建命令
+	
+		mvn -v			查看Maven版本
+			compile		编译
+			test		测试
+			package		打包
+			clean		删除target
+			install		安装jar包到本地仓库
+
+	archetype 插件  用于创建符合Maven规定的目录国家结构
+
+	创建目录的两种方式：
+	1.archetype：generate  按照提示进行选择
+	2.archetype：generate -DgroupId= 组织名，公司网址的反写+项目名
+						  -DartifactId=项目名-模块名
+						  -Dversion=版本号
+						  -Dpackage=代码所存放的包名
+						  
+			构件  构件通过坐标作为其 唯一标识
+	坐标：  <groupId>com.imooc.maven01</groupId>
+			<artifactId>maven01-model</artifactId>
+			<version>0.0.1SNAPSHOT</version>
+
+	仓库
+		当本地仓库没有所需要的jar，就会去全球中央的仓库找到，并下载到本地，如果没有找到，就会报错。
+		全球中央仓库地址：https://repo.maven.apache.org/maven2
+		本地仓库：
+		
+		远程仓库：
+
+	镜像仓库：在Maven的confi目录下的settings.xml中  152行左右  mirror
+		<mirror>
+			<id>maven.net.cn</id>
+			<mirrorOf>central</mirrorOf>
+			<name>central mirror in china</name>
+			<url>http://maven.net.cn/content/groups/public</url>
+		
+		</mirror>
+	更改默认的镜像
+		<localRepository>D:/moocwork/repo</localRepository>
+		将settings.xml 复制一份到 repo中，以后更换Maven版本不需要重新修改settings
+
+	
+	
+	maven生命周期
+	
+	clean  清理项目(上一次构件生成的所有文件)
+		pre-clean	执行清理前的工作
+		post-clean 	执行清理后的文件
+	default  构建项目(最核心)
+		compile test package install
+	site    生成项目站点
+		pre-site	在生成项目站点前需要完成的工作
+		post-site	在生成项目站点之后需要完成的工作
+		site-deploy 发布生成的站点到服务器上
+
+			<plugin>
+				<groupId>org.apache.maven.puugins</groupId>
+				<artifactId> maven-source-plugin</artifactId>
+				<version>2.4</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+				
+			</plugin>
+
+
+	pom.xml解析
+	version  0.0.1 snapshot 快照
+					alpha 内测   beta 公测  Release 稳定  GA正式发布
+
+	<name>		项目描述名
+	<url>		项目地址
+	<description>描述
+	<developers> 开发人员
+	<licenses>  许可证
+	<organization>			组织
+	<dependencies>
+		<dependency>
+			<groupId>
+			<artifactId>
+			<version>
+			<type>
+			<scope>	test		依赖的范围
+			<optional>			设置依赖是否可选  默认false 是可以依赖的
+			<exclusions>		排除依赖传递列表
+			<exclusion>			
+		<dependencyManagement>		依赖管理
+	<build>
+		<plugins>				插件列表
+		
+	<parent>			
+	<modules>	
+
+	依赖的范围
+	 Scope
+		compile  默认的范围 编译运行测试 都有效
+		provide				编译测试 有效
+		runtime				测试 运行 有效
+		test				测试
+		system				与本机系统关联 可移植性差		
+		import				导入的范围 它只使用在dependencyManagement中，表示从其它的pom中导入dependency的配置
+
+	依赖传递
+		
+	依赖冲突
+		原则 1 短路优先
+			2  先声明 优先 路径长度相同
+
+	聚合：
+		1.pom 文件中 修改packaging为 pom
+		2.使用 <modules><module>  被聚合的子模块 </module></modules>
+		3. clean install
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,76 @@
+监听器
+	
+	用途：
+	统计在线人数和用户、系统启动时加载初始化信息、 统计网站访问量  跟Spring结合
+	
+
+监听器的启动顺序
+	优先级
+	监听器 》 过滤器  》 Servlet 
+
+
+监听器按事件 划分 
+	1.监听域 对象自身的创建和销毁事件 的 监听器  每个都对应 一个监听接口Listener
+		ServletContext  contextInitialized 和contextDestroyed方法 传入 ServletContextEvent   用途：定时器 全局属性对象
+		HttpSession		sessionCreate 和 sessionDestoryed 方法	用途：统计在线人数  记录访问日志
+		ServletRequest  requestInitialized 和 requestDestroy方法 用途：读取参数  记录访问历史
+	2.监听域对象中的 属性的增加和删除 的事件 监听器 
+
+	3.监听绑定到 HttpSession域中的 某个对象的状态  的事件监听器
+		HttpSession中的 对象状态 
+		HttpSessionBindingListener 接口      绑定valueBound方法 》解除绑定valueUnbound方法  
+		ttpSessionActivationListener 接口    钝化sessionWillPassivate 方法 》sessionDidActivate方法 活化(实现Serialized序列化)
+		
+	Session钝化机制：
+	本质是在于把 服务器中 不常使用的Session对象暂时序列化到系统文件或数据库系统中，当被使用时候 反序列化到内存中，整个过程服务器自动完成
+
+	Tomcat中的两种 Session钝化管理器
+	SessionManager管理：
+	1.org.apache.catalina.session.StandardManger
+	当Tomcat服务器被关闭或者重启或者Web应用程序被重新加载，Tomcat会将内存中的Session对象钝化到服务器文件系统中
+	钝化后文件的保存路径为：Tomcat的安装路径
+	/work/Catalina/hostname/applicationname/SESSION.ser
+
+	2. org.apache.catalina.session.Persistentmanager
+	默认Tomcat提供两个钝化驱动类 org.apache.Catalina.FileStore org.apache.Catalina.JDBCStore
+
+
+
+	Servlet3.0下监听器的用法
+	@WebListener 该类必须实现至少一个接口ServletContextListener、 ServletContextAttributeListenr 
+	ServletRequestListener 、ServletRequestAttributeListener 、HttpSessionListener 、HttpSessionAttributeListener
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

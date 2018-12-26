@@ -1,0 +1,232 @@
+Spingboot 热部署
+
+	通过配置Tomcat实现热部署	
+		1.直接把项目web文件夹 放在webapps 里
+		2.在Tomcat\conf\server.xml中的<host></host>添加</context>标签。
+			<Context debug="0" docBase="D:/Imooc/web" path="/hot" privileged="true" reloadable="true" />
+			拷贝METE-INF 和 WEB-INF文件夹  , 通过浏览器 localhost:8888/hot/HotPublishServlet
+		3. 在%tomcat_home%\conf\Catalina\localhost中添加一个hot.XML
+			hot.xml
+			<?xml version="1.0" encoding="UTF-8"?>
+			<Context docBase="D:/Imooc/web" reloadable="true" />
+			通过hot虚拟路径来访问
+			
+	热加载案例
+		要求：
+			1. 类层次结构清晰，修改某一个Java类文件 不需要重启服务或重新编译运行程序
+			2. 适当运用设计模式,如工厂模式...
+
+菊太路777弄51号101全民快递
+
+	Spring Boot 简单介绍
+	是一个全新框架，目的是简化Spring应用的搭建与开发过程。
+	是开发人员不需要定义样板化的配置。
+	从根本上讲 是一些库的集合，构建项目，提供无需自行管理这些库的版本。
+	创建独立的Spring应用程序
+	嵌入式的Tomcat ，无需部署WAR文件
+	简化Maven的配置
+	自动配置Spring
+	提供生产就绪功能，如指标,健康检查和外部配置
+	
+	使用场景：
+	开发restful 风格的微服务架构
+	微服务 自动化 横向扩展
+	
+	精简配置 与整合其它工具
+
+
+	Spingboot 热部署实现
+	
+	Springloaded热部署
+		1. Maven启动  在pom.xml 中 添加依赖 在plugin标签下添加如下
+				<dependencies>
+					<dependency>
+						<groupId> org.springframework </groupId>
+						<artifactId> springloaded </artifactId>
+						<version>1.2.6.RELEASE</version>
+					</dependency>
+				</dependencies>
+			命令行启动：切换到pom.xml 目录下，mvn spring-boot:run
+		2. run as  ----Java application
+			配置Arguments启动参数,在VM arguments 输入：
+			-javaagent:D:\springloaded-1.2.6.RELEASE.jar -noverify 
+			
+	Spring-boot-devtools热部署
+		pom.xml中直接添加依赖
+		<dependency>
+			<groupId> org.springframework.boot  </groupId>
+			<artifactId> spring-boot-devtools </artifactId>
+			<optional> true </optional>
+		</dependency>	
+
+
+	Spring Boot 发布方式
+		1. 构建jar包 ，命令行运行 Spring Boot 程序
+			pom.xml文件上，右击run as ---- > Maven install
+			命令行切换到jar的目录下，输入 java -jar xxx.jar
+		2. 构建War包，发布到 Tomcat
+			pom.xml 中jar 替换为war
+			添加依赖Tomcat
+			<dependency>
+				<groupId> org.springframework.boot  </groupId>
+				<artifactId> spring-boot-starter-tomcat  </artifactId>
+			</dependency>	
+			项目报错： 选择项目，右击 Maven ---> Update Project ---> OK 
+			启动类HotDeployApplication 继承 SpringBootServletInitializer,重写configure方法，return  build.sources(HotDeployApplication.class);
+			pom.xml文件上，右击run as ---- > Maven clean
+			pom.xml文件上，右击run as ---- > Maven install
+			打包好的war 复制到Tomcat下的WebAPP里面，重启Tomcat，在浏览器访问的时候路径前 加上war的名字
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

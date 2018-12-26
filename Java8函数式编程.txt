@@ -1,0 +1,38 @@
+JDK8 函数式编程
+	lambada 表达式
+	
+	使用函数式接口进行编程的操作叫函数式编程
+	
+	函数式接口 在一个接口中，有且仅有一个抽象方法     -----lambada 表达式的形式进行表达
+	
+	interface 接口名 {	抽象方法();	}
+
+	缺点：对技术人员要求比较高
+	优点：代码精简     和匿名内部类的整体效果一样
+	      减少了编译次数提高执行效率
+	格式： (): ->  { ... }
+	(): 内部类的方法名
+	->: 固定格式
+	{}: 方法体
+
+steam流对象 流式编程
+	//需求：过滤以名字xxx开头，长度为2 并打印
+	Stream<String> stream = name.stream();
+	stream.filter((name) ->{
+			return name.startsWith("xxx");
+		}).filter((name) ->{return name.length() == 2;
+		}).forEach((name) ->{
+			System.out.println(name);
+		});
+	简化后：name.stream()
+		.filter(name -> name.startsWith("xxx"))  //Predicate接口类   过滤
+		.filter((name) -> name.length() ==2 )
+		.forEach((name) -> System.out.println(name));//Consumer接口类    消费元素
+	
+future:
+
+
+
+
+
+

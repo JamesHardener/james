@@ -1,0 +1,139 @@
+验证码
+
+没有验证码的问题
+	对特定用户不断登录破解密码  对某个网站创建账号  提交垃圾数据  刷票
+	
+验证码：
+		是一种区分用户是计算机还是人的 公共全自动程序
+	作用：防止恶意破解密码 刷票 灌水 有效防止暴力破解特定用户	
+
+<input type="text" id="verifyCode" name="verifyCode" size="6" />
+
+<img alt="验证码" id="safecode" src="<%=request.getContextPath()%> /servlet/ImageServlet" >
+
+
+生成随机图片的 类
+	1. BufferedImage 图像数据缓冲区
+	2. Graphics 绘制图片
+	3. Color 获取颜色
+	4. Random 生成随机数
+	5. ImageIO 输出图片
+	
+	ImageServlet 类 实现步骤
+	1. 定义BufferedImage对象
+	2. 获得Graphics对象
+	3. 通过Random 产生随机验证码信息
+	4. 使用Graphics 绘制图片
+	5. 记录验证码信息到session 中
+	6. 使用ImageIO 输出图片
+
+	开源组件 实现验证码
+Jcaptcha ：生成图形验证码的Java开源组件，与Spring组合使用，可以产生多种形式的验证码
+	下载jcaptcha-integration-simple-servlet-sample.war  放到Tomcat下启动运行
+	
+Kaptha ： 一个实用的验证码生成工具  可配置
+	下载kaptcha-2.3.jar
+	将jar包导入项目
+	编写页面
+	配置web.xml
+	启动项目
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

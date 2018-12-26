@@ -1,0 +1,86 @@
+RabbitMQ
+1、AMQP：Advanced Message Queuing Protocol，是一个提供统一消息服务的应用层标准协议。
+
+2、IPC（单一系统进程间通信） -> socket（不同机器间进程通信） -> AMQP（解决大型系统模块与组件间通信）
+
+3、RabbitMQ 基于 Erlang 开发，是 AMQP 的一个开源实现
+名词术语：
+
+RabbitMQ Server（broker server）：维护一条从 Producer 到 Consumer 的路线，保证数据能够按照指定的方式进行传输；
+Client A & B：数据发送方，Producers create messages and publish (send) them to a broker server (RabbitMQ)，一个有效的 Message 包含 payload 和 label 两部分
+Client 1、2、3：数据消费方，Consumers attach to a broker server (RabbitMQ) and subscribe to a queue
+Exchange：Exchanges are where producers publish their messages
+Queue： Queues are where the messages end up and are received by consumers
+Binding：Bindings are how the messages get routed from the exchange to particular queues
+还有几个隐式的概念：
+
+Server(broker) 接受客户端连接，实现AMQP消息队列和路由功能的进程。
+Virtual Host: 一个虚拟概念，类似权限控制组，可以有若干Exchange 和 Queue ，是权限控制最新粒度
+Exchange: 接受生产者发送的消息，并根据bingding规则将消息路由给服务器中的队列。ExchangeType决定Exchange路由消息的行为。
+	direct：如果 routing key 匹配，那么 Message 就会被传递到相应的 queue
+	fanout：会向响应的 queue 广播
+	topic：对 key 进行模式匹配，比如 ab* 可以传递到所有 ab* 的 queue
+	Connection：Producer 和 Consumer 通过 TCP 连接到 RabbitMQ
+	Channel：它建立在上述的 TCP 连接中，数据流动都是在 Channel 中进行的
+Message Queue：消息队列，用于存储还未被消费者消费的消息。
+Message: 由Header 和Body 组成，Header是由生产者添加的各种属性的集合，包括Message是否被持久化 由那个MessageQueue 接受。优先级是多少  Body是真正的传输的数据
+BingdingKey:将一个特定的Exchange 和一个特定的Queue绑定，关键字成为BingdingKey 
+
+Exchange分类
+Direct Exchange 直接交互式处理路由键
+Fanout Exchange 广播式路由键
+Topic  Exchange 主题式交换器 通过消息的路由关键字 和 绑定关键字的模式匹配，将消息路由到被绑定的队列中。 可以用来支持经典的发布、订阅消息传输模型
+
+
+常用RabbitMq配置
+环境变量配置文件 rabbitmq-env.conf   配置信息的配置文件 rabbitmq.config
+默认是没有的，需要自己手动创建
+
+1. rabbitmq-env.conf  
+rabbitmq-env.conf这个文件的位置是确定的不能变 位于etc/rabbitmq/下 
+RABBITMQ_NODE_IP_ADDRESS:指定ip地址
+RABBITMQ_NODE_PORT:指定端口号 默认5672
+RABBITMQ_CONFIG_FILE:配置文件的路径，文件后缀必须为.config
+ABBITMQ_LOG_BASE:日志文件路径
+
+2.  rabbitmq.config 是个标准的erlang配置文件，必须符合erlang配置文件的标准
+Erlangtuple结构为 {key ,value} key 为 atom类型 value 为一个term 
+	1. tcp_listerners设置rabbitmq 的监听端口默认 5672
+	2. disk_free_limit磁盘低水位线， 若磁盘低于指定值停止接受数据
+	3. vm_memory_high_watermark 设置内存低水位线，低于水位线，开启流控机制，默认0.4
+
+RabbitMQ 命令介绍
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

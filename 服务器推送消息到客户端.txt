@@ -1,0 +1,50 @@
+服务器推送消息到客户端
+
+
+1.服务器端推送技术介绍
+	
+	1.1 服务器端推送技术的产生
+		Ajax应用存在一个致命的缺陷是无法满足传统桌面系统的需求，如服务器端主动向客户端发送消息
+		
+	1.2 服务器端推送技术的应用场景
+		网页邮箱邮件提醒  网页聊天 微信签到墙 
+		
+	1.3 客户端得到通知的方式
+		定时刷新		客户端设置定时器，间隔x秒。向服务器端发送请求		不需要服务器段配置
+		Ajax轮询		轮询的时间没法确认，造成服务器压力大，性能不好  ，不需要服务器段配置，降低带宽的负荷 
+		Coment长连接	客户端发送请求，服务器端比较慢的响应  请求等待的时间可能比较长  实时性好，性能还可以 长期占有长连接
+		Flash XML Socket	JS直接调用Flash提供的接口
+		Java Applet套接口  需要在客户端安装虚拟机
+		
+2.Dwr介绍
+	2.1 什么是Dwr
+		是一个基于Ajax的框架 动态把Java类生成JS 让客户端JS通过DWR访问Java程序
+		
+	2.2 Dwr的运行原理
+		服务器启动时 读取dwr.xml生成 xxx.js ---->   客户端的JS触发 xxx.js的方法
+		-------> Web容器接受请求创建实例 ------> 调用方法处理返回
+		
+		scriptSession: 每次访问 创建一个scriptSession
+		Dwr3.0 		Collection<ScriptSession> sessions = Browser.getTargetSessions();
+		Dwr2.x 		Collection pages = webContext.getScriptSessionsByPage("/xxx.jsp");
+	 
+
+3.Dwr配置详解
+		3.1  web.xml配置
+
+
+		3.2  dwr.xml配置
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,137 @@
+git入门
+创造者;Linus Torvalds  也是Linux的创造者
+记录版本更新的所有变化，方便回滚
+
+为什么学习Git
+牛逼的互联网大神们都在使用，完整的版本控制功能解决多人协作的问题
+提高开发效率，习惯把自己代码同步到GitHub上
+
+Git安装
+
+下载window Git安装
+
+Mysysgit https://git-scm.com/download/win
+
+配置用户信息
+
+- git config --global user.name "wbs"
+
+- git config --global user.email "wbs@163.com"
+
+git config --list
+//查看配置是否生效
+
+客户端GUI界面 sourcetree
+
+git init		//初始化版本库
+git  add		//添加文件到暂存区
+git  commit		//提交文件到仓库
+git  status		//查看仓库状态
+
+ls -a			//把所有隐藏文件和未隐藏文件都显示
+
+echo  "git repo2" >> test.txt
+//	echo 输入	>> 管道追加    
+
+cat test.txt  	//查看文件内容
+git add test.txt 添加到缓存
+git commit -m "repo2 first commit"  //提交  -m  提交信息
+
+
+git 工作流
+工作区 --> 暂存区 index区  --> 版本区 master区
+
+丢弃：把暂存区的内容丢掉，回滚到添加到暂存区之前的状态
+git reset HEAD test.txt    暂存区删除，此时工作区还有
+git checkout -- test.txt   工作区内容删除
+
+回滚提交到版本区之前(删除提交的内容)：使用  重置当前分支到此次提交 --> 直接丢弃
+git log  查询提交的 commit 字符串号
+git reset --hard   commit 字符串号  暂存区和仓库都回滚到 第一次提交
+
+删除文件：1.工作区删除 2.添加暂存区( 删除的操作)，此时本地仓库还有此文件 3.最终提交(本地、暂存区都已经删除)
+git rm test.txt   本地文件清空
+git commit -m "delet test.txt "   清空仓库和暂存区
+
+删除本地仓库：
+1、$ git branch  #显示所有本地分支
+2、$ git init   #初始化本地版本库
+3、$ ls -a    #找到目录下.git
+4、$ rm -rf  .git   #删除
+5、可以看到master分支已经删除（test1中隐藏的.git文件夹已经删除）
+6. 删除git之后 再去删除本地的库文件夹即可
+ rm -rf E:\document\.git
+ 
+ 
+GitHub删除仓库
+ 1.在已有的项目中选择需要删除的项目，进入项目，找到“Settings”，进入查看设置
+ 2.在设置栏篇下拉至网页末端，此时可以看到“Delete this Repository”选项，如果确定需要删除，则点击该选项。
+ 3.在彻底删除之前，我们需要再次输入项目名称以确认删除项目，此时点击红色框确认即可。
+ 
+ 
+创建SSH key创建;
+
+1.创建SSH key  git 命令行运行如下：
+	ssh-keygen -t rsa -C "w1160099@163.com"    
+	//w1160099@163.com此邮箱是注册GitHub账号的邮箱 
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDajZaOHuriVnrsLXhYnkje4jgpUiZzEXakatynQvp95ROoDyCWFm8TdQusRir7RKCj+Z+YKgrdNkyTk02zDcIPxJ1QHlk+na517ciZ9lwhjYX36QQwLBPispJ3seKdVidTpIxGRXPhEgflF9r2jDI8wxxy2ZD2y580L0wuExfl/opm9yfkveJQe7TTr+9MVQjz/EezWchvEungZXm/cR2ROovv/rlsLB8UWiOsuaM2DeWv9Pndk14UFiMUVeDROt4Fv2W7C03IPXO5JUUsiz31m1mmY29NHqkTGFkRJcWezdxe+PiN6LcOORFcw1+vnLvCo4hxktpjeORGnTEeiFdF w1160099@163.com
+2.登录GitHub --> settings --> SSH and GPG keys --> new SSH key 
+3.title:james   key :输入1生成的SSH key 字符串使用id_rsa.pub --> AddSSH key
+4.查看本地文件仓库是否和GitHub联通
+	ssh -T git@github.com
+
+添加远程仓库  document-repository
+git remote add origin git@github.com:jamesharden-demo/demo4.git
+
+git remote add origin git@github.com:document-repository/demo.git
+git pull origin master --allow-unrelated-histories
+
+git push -u origin master            -u 远程
+
+本地工作目录运行命令行如下命令：
+or create a new repository on the command line
+	echo "# james" >> README.md
+	git init
+	git add README.md
+	git commit -m "first commit"
+	git remote add origin https://github.com/JamesHardener/james.git
+	git push -u origin master
+
+ 
+远程仓库地址
+https://github.com/JamesHardener/james.git  
+
+如何把本地仓库和远程仓库关联 同步
+本地仓库和 远程仓库都建好
+sourcetree   -->    master分支 --> 创建拉取请求   --> 设置 --> 远程仓库
+--> 添加 	--> 远程仓库名 :origin    url:https://github.com/JamesHardener/james.git  用户名: 提交的用户名
+--> 确定  --> 确定       sourcetree界面 如果出现 远程 origin 说明关联成功
+ 
+提交 到远程仓库
+master分支  --> 推送   --> origin 	--> 推送
+
+克隆远程仓库到本地工作目录
+git clone git@github.com:jamesharden-demo/demo4.git
+
+
+标签管理
+更新版本 通常是在版本库中打一个标签
+回滚通过标签回滚
+
+git tag		查看所有标签
+git tag name		创建标签
+git tag -a name -m "comment"		指定提交信息
+git tag -d name		删除标签
+git push origin name		标签发布
+
+
+分支管理
+场景：一个任务时间很长，如果中途提交影响别人 不提交又会有进度丢失的风险这时候可以创建分支
+
+git branch name    创建分支
+git branch			查看分支
+* master			*表示在当前分支
+
+git checkout name	切换分支
+git merge name     合并分支到master分支，必须先切换到master分支
+git branch -d name  删除分支

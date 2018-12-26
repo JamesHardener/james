@@ -1,0 +1,33 @@
+一对一：
+	1. 在任意一方 添加一个字段 使用唯一修饰符 作为外键指向另一方的主键
+	2.在任意一方将主键作为外键约束指向另一方的主键
+
+一对多  dept : employee = 1:N
+	在多的一方添加一个字段，作为外键约束指向一的一方的主见
+	alter table employee add foreign key(dno) references dept(did);
+多对多  student ：course = N：N 
+	创建一张中间表(选课表) 有两个字段分别指向学生表和课程表的主键 将中间表的字段分别作为多的一方的外键约束指向一的一方
+	student (sid sname) course(cid canme)  stu_cou(sno cno)
+	alter table 多的一方 add foreign key (添加的字段) references 一的一方(主键);
+	alter table stu_cou add foreign key(sno) references student(sid);
+	alter table stu_cou add foreign key(cno) references student(cid);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

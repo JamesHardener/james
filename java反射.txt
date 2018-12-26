@@ -1,0 +1,492 @@
+
+	创建类的三种方法
+	
+	1.  类名.class
+	2.  类的实例对象.getClass()
+	3.  Class.forName()
+
+
+	Class.forname("类的全称")
+	不仅代表了 类的类类型  还代表了动态加载类    
+	编译时刻加载类 是静态加载类         运行时刻加载类 是 动态加载类
+
+	一般来说 功能性的类使用动态加载。
+	
+	Method类  方法对象   一个成员方法就是一个Method对象 
+	getMethods()方法获取的是所有的public 的函数，包括父类继承来的
+	getDeclareMethods()  获取的是所有该类自己声明的 方法，不问 访问的权限
+	getReturnType()   得到方法的返回值类型的 类类型
+	getParameterTypes() 得到 参数列表的 类型的   类类型
+	
+	
+	方法的反射
+	方法的名称 和 参数列表 唯一决定某个方法
+	method.invoke(对象，参数列表)
+	
+	通过Class  Method 来认识泛型的本质
+	结论：Java中集合的泛型，是防止错误输入的，只在编译阶段有效，绕过编译就无效啦！
+	
+	
+	
+	
+	gbk 编码  中文占用2个字节  英文占1 个字节
+	utf-8      中文占 3 个字节  英文 占1 个字节
+	utf-16be	中文占 2个字节  英文占2 个字节   Java使用双字节编码
+	
+	当你的字节序列是 某种编码时， 如果想把字节序列变为字符串，也必须使用这种编码方式，否则出现乱码。
+	中文机器上 直接 创建 的文本文件，只认识ansi编码
+	
+	java.io.File 类 用于 表示文件（目录），只用于表示文件的信息（大小名称）不能用于访问文件的内容
+	
+	String[] filenames = dir.list();  返回的是字符串数组(直接子 目录文件 的名称 )，不包含子目录
+	
+	如果要遍历子目录下的内容就需要构造 成 File对象做递归操作，File类提供了直接返回
+	
+	File[] files = dir.listFiles()  返回的是直接子目录的抽象
+	if(files!=null && files.length > 0){
+		for(File file : files){
+			if(file.isDirectory()){
+				listDirectory(file); 递归
+			}else{
+				System.out.println(file.);
+			}
+		}
+	}
+	
+	RandomAccessFile  Java提供的对文件内容的访问 ，可以读写文件，支持随机访问(任意位置)
+	
+	Java文件模型   在硬盘上文件是 byte byte byte 存储，是数据的集合
+	打开方式   rw 读写  r 只读
+	RandomAccessFile  raf = new RandomAccessFile(file,"rw");  文件指针，打开文件时 指针在开头 pointer = 0;
+	raf.write(int) 		每次只写一个字节，指针指向下个位置，准备再次写入
+	int b = raf.read()	每次读一个字节
+		raf.close(); 文件读写 完成都要关闭
+	
+	String s = "中";
+	byte[]  gbk = s.getBytes("gbk");
+	raf.write(gbk);
+	
+	读文件 必须把指针移到头部   raf.seek(0);
+	
+	16进制输出
+	Integer.toHexString(b & 0xff)
+	
+	java 文本 char  是16位无符号整数，是字符的Unicode编码 双字节编码
+	文本   byte byte byte。。。的数据序列
+	文本文件 是文本序列按照 某种编码方案序列化为Byte的存储
+	
+	字符流的处理 一次一个字符，底层实现是基本的字节序列，基本实现，处理的是文本文件
+	InputStreamReader 	完成byte流解析为 char流，按照编码解析
+	OutputStreamWriter	提供char流到byte流 按照编码处理
+	
+	对象的序列化 讲Object 转换byte 序列，反之 叫反序列化
+	
+	ObjectOutputStream 是过滤流 writeObject
+	ObjectInputStream readObject
+	
+	对象必须实现序列化接口Serializable才能序列化，否则出现异常
+	这个接口没任何方法，只是一个标准 
+	
+	transient 关键字 该元素不会进行JVM默认的序列化
+	private transient int age;
+	一个类实现了序列化接口，那么其子类 都可以进行序列化
+	反序列化 是递归调用父类的构造函数
+	
+	
+	
+    Springboot 启动方式 
+		 1. 编写Controller类	注解RestController, 写一个方法 配置RequestMapping(value = "/hello" , method = RequestMapping.GET)
+		 2. 使用Maven 启动		进入项目根目录下 ，输入命令 mvn spring-boot：run 
+		 3. 使用Java启动		进入项目根目录下 ， 输入命令 编译 ，mvn install    然后 cd target   ll 查询jar包，   输入命令Java -jar girl-0.0.0.1-SNAPSHOT.jar
+	
+	
+	
+	属性配置：
+		application.properties
+		
+		spring.datasource.url=jdbc:mysql://127.0.0.1:3306/
+		spring.datasource.username:root
+		spring.datasource.password:123456
+		spring.datasource.driver-class-name: com.mysql.jdbc
+	
+		application.yml
+		
+		server:
+			port: 8082
+			context-path: /girl 
+		
+		cupSize: B
+		age: 18
+		content: "cupSize: ${cupSize} , age: ${age}"
+		
+		girl: 
+			cupSize: B
+			age: 18
+		
+		
+		引用：
+		@Value（"${age}"）
+		private Integer  age ;
+		@Value ("${content}")
+		private String content;
+		
+		@Autowired
+		private GirlProperties girlProperties；
+	
+	
+	
+		分组
+		@Component
+		@ConfigurationProperties(prefix = "girl")
+		public class GirlProperties {
+			private String cupSize;
+			private Integer age;
+			
+			Getter and Setter
+		}
+	
+		spring:
+			profiles:
+			active: dev
+	
+	
+	Controller
+	
+	@Controller			处理http请求
+	@RestController		Spring4之后新添加的注解，原来返回json 需要@ResponseBody 配合 @Controller
+	@RequestMapping		配置URL 映射			  @RequestMapping(value = "/say" , method = RequestMethod.GET)
+	
+	参数：
+	@PathVariable		获取URL中的数据
+	@RequestParam		获取请求参数的值          @RequestParam（value = "id" , required = false , defaultValue = "0" ） Integer id
+	@GetMapping			组合注解				  @GetMapping(value = "/say")	
+	
+	
+	
+	静态文件请求匹配方式
+	spring.mvc.static-path-pattern=/**
+	修改默认的静态寻找地址资源目录
+	spring.resources.static-locations= classpath：/Target
+	
+	Spring-Data-Jpa
+	JPA Java Persistence  API 定义了一系列对象持久化的标准，目前实现这一规范的产品有Hibernate TopLink
+	
+	jpa:
+		hibernate:
+			ddl-auto: update
+		shou-sql:true	
+	
+	
+	Sequel Pro
+	PostMan
+	
+	
+	@RequestParam 和 @PathVariable 注解是用于从request中接收请求的，两个都可以接收参数，
+	关键点不同的是@RequestParam 是从request里面拿取值， 		?param1=10&param2=20 
+	而 @PathVariable 是从一个URI模板里面来填充					/hello/{id}  
+	http://localhost:8080/springmvc/hello/101?param1=10&param2=20
+	
+	@PathVariable(value="id") String id,
+    @RequestParam(value="param1", required=true) String param1
+	
+	@RequestParam 支持下面四种参数
+
+		1.defaultValue 如果本次请求没有携带这个参数，或者参数为空，那么就会启用默认值
+		2.name 绑定本次参数的名称，要跟URL上面的一样
+		3.required 这个参数是不是必须的
+		4.value 跟name一样的作用，是name属性的一个别名
+	
+	@PathParam
+
+		这个注解是和spring的pathVariable是一样的，也是基于模板的，但是这个是jboss包下面的一个实现，上面的是spring的一个实现，都要导包
+
+	@QueryParam
+
+		@QueryParam 是 JAX-RS 本来就提供的，和Spring的RequestParam作用一致
+
+	@ResponseBody
+
+		responseBody表示服务器返回的时候以一种什么样的方式进行返回， 将内容或对象作为 HTTP 响应正文返回，值有很多，一般设定为json
+
+	@RequestBody
+
+		一般是post请求的时候才会使用这个请求，把参数丢在requestbody里面
+	
+	@Transactionl   添加事物，增删改都可以添加，查询不需要
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

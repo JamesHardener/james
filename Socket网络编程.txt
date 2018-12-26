@@ -1,0 +1,262 @@
+Socket网络编程
+	1.网络基础知识 
+		
+		TCP/IP模型：
+		物理层  网线 网卡 交换机
+		数据链路 层  
+		网络层
+		传输层  TCP/IP协议
+		应用层	HTTP超文本传输协议 FTP文件传输协议  SMTP简单邮件传送协议   Telnet远程登录服务
+		
+		端口：
+		用于区分不同应用程序
+		端口号 范围 0~65535，其中0~1023为系统所保留
+		IP地址 和端口号组成了 所谓的Socket，它是网络上运行的程序之间双向通信的终结点 ，是TCP和UDP的基础。
+		http  80  ftp  21  telnet  23
+		
+		Java中的网络支持
+		
+		InetAddress :用于标识网络上的 硬件资源
+		URL :	统一资源定位符 通过URL 可以直接 读取 或写入网络上的数据
+		Sockets : 使用TCP协议实现网络通信的Socket 相关的类
+		Datagram:  使用UDP协议 将数据保存在数据报中 ， 通过网络进行通信。
+		
+	2.InetAddress类
+		用于标识网络上的 硬件资源 ，表示互联网协议地址
+		InetAddress address = InetAddress.getLocalHost()
+							=  InetAddress.getByName("xxx")   xxx 可以主机名 或者IP地址
+							address.getHostName()
+							address.getHostAddress()
+	3.URL
+		Uniform Resource Locator 统一资源定位符 表示Internet 上某一资源的地址
+		两部分组成： 协议名称 = 资源名称 中间使用冒号隔开
+		java.net包中 提供了URL类 来表示URL
+		
+		URL imooc = new URL("http://www.xxx.com");
+		URL url = new URL(imooc,"/index.html?username=tom#test");
+		url.getProtocol();  协议名称
+		url.getHost(); 主机名称
+		url.getPort(); 端口号 未指定端口就是用默认的，返回-1 
+		url.getPath()  文件路径
+		url.getFile() 文件名
+		url.getRef()  相对路径
+		url.getQuery()  查询字符串
+		
+		URL读取网页上的内容
+		1.通过URL对象的openStream()方法可以得到指定资源的输入流
+		2.通过输入流读取 访问网络上的数据。
+		
+	4.TCP编程
+		TCP协议 是面向连接 、可靠地、有序的，以字节流的方式发送数据
+		基于TCP协议实现网络通信的类
+		客户端：Socket类   服务器端：ServerSocket类
+		
+		Socket通信模型：基于TCP
+		Server   ：S        Client  ：C
+		1. S 建立服务器端侦听socket
+		2. C 创建连接Socket向服务器端发送请求
+		3. S 等待并接受连接请求，之后创建连接socket
+		4. C InputStream   ---  OutputStream
+		5. S OutputStream  ---  IntputStream
+		6. C 关闭socket及相关资源
+		7. S 关闭socket及相关资源
+	 
+		Socket通信实现步骤：
+		1. 创建ServerSocket 和 Socket 
+		2. 打开连接到 Socket 的输入/输出流
+		3. 按照协议 对Socket进行读写操作
+		4. 关闭输入/输出流 关闭socket
+		
+		服务器端：
+		1.创建ServerSocket对象，绑定监听端口
+		2.通过accept() 方法监听客户端请求
+		3.连接建立后，通过输入流读取客户端发送的请求信息
+		4.通过输出流向客户端发送响应信息
+		5.关闭相关资源
+		
+		客户端：
+		1.创建Socket对象，指明需要连接的服务器的地址和端口号
+		2.连接建立后，通过输出流向服务器端发送请求信息
+		3.通过输入流获得服务器响应的信息
+		4.关闭相关资源
+		
+		多线程服务器
+		
+		应用多线程来实现服务器与多客户端之间的通信
+		基本步骤;
+		1. 服务器端创建ServerSocket ,循环调用accept() 等待客户端连接
+		2. 客户端创建一个socket并请求和服务器端连接
+		3. 服务器端接受客户端请求，创建socket与该客户端建立专线连接
+		4. 建立连接的两个socket在一个单独的线程上对话
+		5. 服务器端继续等待新的连接
+		
+	
+	5.UDP编程
+		UDP协议 (用户数据报协议) 是无连接 不可靠 无序的。
+		以数据报作为数据传输的载体
+		进行数据传输时，首先需要将要传输的数据定义成数据报Datagram，在数据报中指明数据所要达到的Socket，然后再将数据报发送出去。
+		
+		DatagramPacket:数据报包
+		DatagramSocket：进行端到端通信的类
+	
+		服务器端实现步骤
+		1. 创建DatagramSocket，指定端口号
+		2. 创建DatagramPacket
+		3. 接受客户端发送的数据信息
+		4. 读取数据
+		
+		客户端实现步骤;
+		1. 定义发送信息
+		2. 创建DatagramPacket，包含将要发送的信息
+		3. 创建DatagramSocket
+		4. 发送数据
+	
+		注意：
+		1. serverThread.setPriority(4);//设置线程的优先级，范围1~10，默认5，不设置，运行速度慢
+		2. 对于同一个socket，如果关闭了输出流，则与之相关的socket也会被关闭，一般不用关闭流，关闭socket，会自动关闭流
+		3. 使用TCP协议实现网络通信，传输对象使用的是 字符串, 但是我们应该使用对象传输
+			Socket socket = new Socket("localhost",8888);
+			OutputStream os = socket.getOutputStream();
+			ObjectOutputStream oos = new ObjectOutputStream(os);
+			User user = new User("admin","124");
+			oos.write(user);
+			socket.shutdownOutput();
+			BufferedReader br = new BufferedReader( new InputStreamReader(socket.getInputStream()));
+			String info =br.readLine();
+			while(info!=null){
+				System.out.println("我是客户端，服务器说:"+info);
+				info = br.readLine();
+			}
+		4.  socket 编程 传递文件使用的是字符串，  如果传递的是文件
+			BufferedOutputStream fos = new BufferedOutputStream( new FileOutputStream(fileTemp));
+		5.  总结
+			重点：Socket通信原理  基于TCP的Socket通信
+			经验技巧： 多线程优先级 是否关闭输出入流 使用TCP通信传输对象 socket传递文件
+	
+	
+	小泽玛利亚 高树玛利亚
+	松岛枫 冬月枫 美竹凉子 常盘樱子 北原多香子 小仓爱莉丝
+	南沙也香 大尺佑香 真田春香 石黑京香 泽口明日香
+	山崎亚美 木村那美 北川绘美 天宫真奈美
+	
+	
+	递归;自己调自己  注意临界值
+	return num == 0 ?0: num + add(num-1)
+	缺点：如果调用方法的次数太多容易报内存溢出！！！！
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	

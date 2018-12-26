@@ -1,0 +1,6 @@
+Freemarker Java模板引擎
+
+	1 什么是Freemarker
+		模板引擎  不是web框架 主要用于解析服务器端的数据  Freemarker.org
+	
+	2 数据模型 + 模板 = 输出(HTML)

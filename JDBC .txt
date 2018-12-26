@@ -1,0 +1,71 @@
+JDBC 
+
+	JDBC 步骤：
+	1.加载驱动程序 Class.forName(driverClass)
+	2.加载MySQL驱动程序 	Class.forName("com.myslq.jdbc.Driver")
+	  加载Oracle驱动程序	Class.forName(oracle.jdbc.driver.OracleDriver")
+	3. 获得数据库连接    DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/imooc/","root","root");
+	4. 创建Statement对象  conn.createStatement();
+
+	
+	过滤器：
+	应用场景
+	1.对用户请求进行统一认证
+	2.编码转换
+	3.对用户发送的数据进行过滤替换
+	4.转换图像格式
+	5.对响应的内容进行压缩
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,379 @@
+Inrellij IDEA
+
+	1.跳转
+		项目之间跳转
+			Ctrl + Alt + [  / ] 
+		文件之间跳转
+			Ctrl+ shift + A  输入 recent files  查看最近编辑过的 文件
+		浏览修改位置跳转
+			修改：
+			recently changed files   输入 Ctrl + shift + E
+			Navigate -> Last Edit Location        
+			浏览：
+			Navigate -> Back  /  Forward
+		书签跳转： 		应用场景；  阅读框架 源码的时候 学习别人遗留的项目
+			Toggle bookmark   F11  ->  Ctrl+ F11 + 1  	 Ctrl + F11 +2  -------->  Ctrl +1  / Ctrl+2 切换
+		收藏位置和文件
+			Alt + 2  Favorites  -->  alt+shift +F  收藏 
+		字符跳转插件emacsIdes置跳转
+			Ctrl + J
+			
+		编辑区 和文件区跳转
+			<------Alt + 1        -------> Esc
+			
+	2.精准搜索
+		类    Navigate -----> Class   				Alt + shift +G
+		
+		文件	Navigate -----> File  				Ctrl + F 
+			
+		符号：函数/属性 Navigate ----->Symbol  		Alt + shift + Ctrl + N 
+ 	
+		字符串：Edit---> Find ---> Find in Path		Ctrl + Shift + F 
+				Match case 匹配大小写  words 是否是单词 Regex 正则表达式搜索 File mask 指定某一类文件搜索
+				project 项目 Module 模块 Directory 当前目录  Scope  指定目录搜索 
+
+	3.代码小助手	
+		列操作：
+			
+			
+			1. Ctrl + shift + →   选中单词  寻找快捷键  move  caret to next word
+			2. Ctrl + shift + U   大小写切换   Edit ---> Toggle case 
+			3. shift + delete	  剪切
+			4.	Home			  移到到行首(开头)	寻找快捷键  move  caret to line start			
+			5.	shift + insert	  粘贴,输入左边括号
+			6.  Ctrl + shift + →  移到下一个单词
+			7.	End 			  移到到结尾
+			8.  ）				  右括号
+			9.  shift + Alt + Ctrl + J 列操作 Edit---> Find ---> Select All Occurrence 
+
+		live template	自定义模板
+		
+			mian函数：
+			Settings --->  Editor ----> Code Style ----->  Live Templates --->  +  ----Abbreviation:main  Description:程序入口Template text
+			--->define  ----> Java ---> OK 
+			
+			psfi,psfs,ps ,pi, psc ,pic
+				public static  final int 
+				public static  final String
+
+				public static  final int $var1$ = $var2$ ;
+
+
+			Postfix Completion     不可编辑的
+				Settings---> Editor---->General ---Postfix Completion
+			常用的:
+				for循环  
+				sout 输出  System.out.Println("xx");
+				field 构造函数时 比live template高效
+				return 返回值   user.return + 回车  写 return user；
+				nn	判断是否为空  user.nn   + 回车  写 if(user != null){ xxxx;}
+
+			alter enter
+			
+				find  ----->  show intention Action
+				1.自动创建函数   当创建一个 新的 函数时候，选中函数名 + Alt + Enter
+
+				2.list replace  代码自动替换 最简单的写法
+	
+				3.字符串format 或者build
+			
+				4.实现接口
+			
+				5.单词拼写
+			
+				6.导包
+
+	4.编写高质量代码
+		
+		重构
+			重构变量  shift + F6
+			重构方法  Ctrl + F6  Refactor ----> Change Signature
+			
+		抽取	
+			字符串：Ctrl + Alt + V 	 Refactor ----> Extract ---> Variable
+			
+			抽取静态变量		Ctrl + Alt +  C  	
+ 
+			抽取成员变量 		Ctrl + Alt +  F  
+
+			方法参数            Ctrl + Alt +  P 
+
+			抽取函数			Ctrl + Alt +  M
+
+	5.寻找修改轨迹
+		
+		Git 集成
+			annotate    在行开头单击，查看基本信息
+			移到所有修改之处  keymap---> Main menu ----> Navigate ---->Previous Change /Next Change  	Ctrl +Shift + Alt  + ↑    / ↓
+			撤销修改	keymap---> Main menu ---->VCS -----> Git ----- Revert 		Ctr + Alt + Z 
+		
+		Local history
+			Show History   查看所有修改记录
+			Put Label		添加Label ,相当于Git里面的Commit
+
+	6.关联一切
+		Spring
+			File ---->  Project Structure (Ctrl + Shift + Alt + S) -----> Facets ------>   +  ----> Spring  ----> OK 
+		数据库
+
+i1341016048
+
+
+	7.调试
+		
+		断点调试
+			添加断点  Run----> Toggle Line Breakpoint     Ctrl+ F8
+			运行Debug   Alt + Shift + F9	
+			单步运行	F8
+			resume		F9 跳到下一个断点，没有就结束程序。
+			查看所有断点  Ctrl + Shift + F8
+			禁止所有断点	Mute Breakpoint
+			条件断点		Ctrl + Shift  + F8   在 Condition:s.equals("zhangsan")
+			表达式求值		 Run---->  Evaluate Expression
+			跳到指定行			Run to Cursor  Alt + F9
+			SetValue		Variable 中选中List 按 F2 ---------> F8
+
+			添加/取消断点——ctrl+F8
+			单步运行——F8
+			跳到下一个断点——F9
+			禁止所有断点——debug后在左下角的Mute breakPoints
+			查看所有断点——shift+Ctrl+F8
+			运行到指定行（光标所在行）——ALT+F9
+			条件断点——在需要用条件断点的断点处 使用shift+Ctrl+F8
+			setValue调试过程中动态改变值——F8
+		
+		run anywhere if you can 
+			运行当前上下文
+			debug configuration
+			Run     Alt + Shift + F10
+
+			在当前可运行列表选择一个运行
+					Alt + Shift + F9
+			
+			编辑当前运行
+			
+
+	8 其他操作
+		
+		
+		文件操作   Alt + Insert   或者 Ctrl + N 
+					复制  F5
+					移到  F6 
+		文本操作	
+					复制文件名					Ctrl + C 
+					复制完整路径 				Shift + Ctrl + C 
+					最近复制的文件名 全部粘贴   Ctrl + Shift + V   ---> 按 1 2 3 4 批量粘贴
+		
+		结构图
+					查看当前field method大纲    Navigate --->  File Structure   Ctrl + F12
+
+
+					查看Maven 依赖 类图     Ctrl + Shift + Alt + U  当前xml文件，右键 ----> Maven ----> Show Dependency   
+
+					查看类继承结构 			 Hierarchy Class Son   Ctrl + H  
+					方法调用层次	  		Call Hierarchy			Ctrl + Alt + H 
+					
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

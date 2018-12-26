@@ -1,0 +1,92 @@
+1.DWR介绍
+  服务器端推送技术的产生
+		Ajax 异步请求，存在致命缺陷无法满足传统桌面系统的需求( 服务端主动发送消息到客户端 )
+  
+  服务器端推送技术的应用场景
+		网页邮箱新邮件提醒
+		网页聊天   微信签到墙
+		
+  客户端得到通知的方式
+		定时刷新   		不需要服务器端配置  缺点：服务器压力大，带宽浪费，频繁主页刷新用户体验不好
+		Ajax轮询   		不需要服务器端配置  缺点：服务器压力大，降低带宽  实时性不好		
+		Comet长连接		C端主动发起请求,请求等待服务端响应时间可能比较长   好处：实时性比较好 性能不错 缺：长期占有长连接的资源
+		Flash XML Socket	实现基础Flash必须提供XML Socket类 JavaScript必须Flash紧密结合
+		Java Applet 套接口  在客户端使用java Applet通过java.net.Socket这个类建立与服务端套接口的连接 致命弱点：客户端安装java虚拟机
+
+2. 什么是Dwr
+	是一个基于Ajax的框架
+	动态的把Java类生成 为 JavaScript
+	让客户端 JavaScript通过DWR访问Java程序
+	
+	运行原理：
+	服务端启动时：读取dwr.xml 生成xxx.js
+	客户端触发 xxx.js 中的方法,调用服务器端的某一个类的某个方法(如web容器接受请求创建实例)
+	调用方法处理返回客户端
+	
+	scriptSession
+	创建 ： 每次访问创建一个scriptSession
+	服务端获取scriptSession有两种方式：
+	Dwr3.0
+	Collection<ScriptSession> sessions = Browser.getTargetSessions();
+	
+	Dwr2.x 
+	Collection pages = webContext.getScriptSessionsByPage("/xx.jsp");
+	
+	
+	Dwr 配置详解
+	
+	1.web.xml 配置
+	<servlet>
+		<servlet-name>dwr-invoker</servlet-name>
+		<servlet-class>org.directwebremoting.servlet.DwrServlet</servlet-class>
+		<init-param>
+			<param-name>debug</param-name>
+			<param-value>true</param-value>
+		<init-param>
+	</servlet>
+	
+	 <servlet-name>dwr</servlet-name>
+        <!-- 2.X 版本, 下面的是3.X <servlet-class>org.directwebremoting.servlet.DwrServlet</servlet --> 
+        <servlet-class>uk.ltd.getahead.dwr.DWRServlet</servlet-class>
+     	<!-- 使用服务器推技术(反转AJAX) -->
+        <init-param>
+            <param-name>activeReverseAjaxEnabled</param-name>
+            <param-value>true</param-value>
+        </init-param>
+        <!-- 使能够从其它域进行请求 true 开启  ; false 关闭   -->
+         <init-param>
+            <param-name>crossDomainSessionSecurity</param-name>
+            <param-value>false</param-value>
+        </init-param>
+        <!-- 允许远程调用 JS-->
+         <init-param>
+            <param-name>allowScriptTagRemoting</param-name>
+            <param-value>true</param-value>
+        </init-param>
+	
+	<servlet-mapping>
+		<servlet-name>dwr-invoker</servlet-name>
+		<url-pattern>/dwr/*</url-pattern>
+	</servlet-mapping>
+	
+	2.dwr.xml 配置详解
+	<?xml version="1.0" encoding="UTF-8"?>
+	<!DOCTYPE dwr PUBLIC "-//GetAhead Limited//DTD Direct Web Remoting 2.0//EN"  "http://getahead.org/dwr/dwr20.dtd">
+	<dwr>
+		<allow>
+			<create javascript="service" creator="new">
+				<param name="class" value="全路径类" />
+			</create> 
+		</allow>
+	</dwr>
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	

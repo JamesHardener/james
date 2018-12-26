@@ -1,0 +1,241 @@
+注解
+
+1.5引入的  
+java 提供的一种原程序中的元素关联任何信息和 任何元数据的途径和方法
+
+
+常见注解
+	JDK自带注解：
+	
+	Override							重写父类的方法
+	SuppressWarnings("deprecation")      方法过时的时候，忽略警告
+	Deprecated							标注方法已经过时
+	
+	第三方注解 
+		Spring:
+		Autowired
+		Service
+		Repository
+		
+		Mybatis
+		InsertProvider
+		UpdateProvider
+		Options
+		
+注解分类
+		按照运行机制
+				源码注解		只在源码中存在，编译时候就不存在
+				编译时注解		在源码和.class文件中都存在，JDK自带的注解
+				运行时注解		运行阶段还起作用，影响运行逻辑的注解  Autowired
+		来源
+				JDK自带注解
+				第三方注解
+				自定义注解
+		元注解  给注解 进行注解	
+			@Target({ElementType.METHOD,ElementType.TYPE})  作用域 TYPE类 接口 PARAMETER参数声明 PACKAGE 包 METHOD 方法 LOCAL_VARIABLE 局部变量 FIELD字CONSTRUCTOR
+			@Retention(RetentionPolicy.RUNTIME)		生命周期 Source Class RunTime
+			@Inherited								允许子类继承		
+			@Documented								生成javadoc时会包含注解
+			public @interface Description{...}
+
+自定义注解
+		语法要求：
+			1.使用@interface 关键字 定义注解
+			2.成员 以 无参无异常方式声明
+			3.可以使用 default 为成员变量指定 默认值
+			4.成员类型 是受限制的，合法的类型 包含 原始类型 和String Class Annotation Enumeration
+			5.如果注解只有一个成员，成员名必须为value()，使用的时候可以忽略成员名和赋值号 =
+			6.注解类 可以没有成员，称为标识注解
+	
+	使用自定义注解
+		@<注解名>(<成员名1>=<成员值1>,<成员名2>=<成员值2>,...)
+		@Description(desc="I am eyeColor",author="Boy",age=18)
+		public String eyeColor(){	return "red" ;}
+	
+	解析注解
+		通过反射获取类 函数 或成员上的运行时 注解信息，从而实现动态控制程序运行的逻辑。
+		1.使用类加载器 加载类  Class c = Class.forName("...");
+		2.找的类上面的注解  Boolean isExist = c.isAnnotationPresent(Description.class);
+		3.拿到注解实例   Description d = (Description) c.getAnnotation(Description.class))
+		4.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,387 @@
+ 算法 和 签名
+	
+	数字签名算法：	
+		签名
+		数字签名————带有密钥 (公钥 私钥) 的消息摘要算法
+		验证数据完整性 、认证数据来源 抗否认
+		OSI参考模型 参考java实现Base64加密算法 1-4小节
+		私钥签名、公钥签名
+		RSA、DSA、ECDSA
+		
+		RSA 算法 包含数字签名 加解密 
+		
+		实现方		默认长度  签名长度  		密钥长度			算法 
+		JDK 		1024	  与密钥长度相同	512~65536(64的倍数)	MD2withRSA  MD5withRSA SHA1withRSA
+		BC实现		2048	  同上				 同上				SHA224withRSA SHA256withRSA SHA384withRSA SHA512withRSA RIPEMD128withRSA  RIPEMD160withRSA
+			构建密钥 	: 1.发送方 构建密钥对 	2.公布密钥 
+			发送数据	: 1发送方使用私钥对数据签名 2. 发送签名 数据 3 接收方使用公钥 签名验证数据
+		
+		DSA 数字签名算法  Digital Signature Algorithm   仅包含数字签名
+		DSS数字签名标准Digital Signature Standard
+		
+		实现方		默认长度    密钥长度			算法 
+		JDK 		1024	  	512~1024(64的倍数)	SHA1withDSA
+		BC实现		1024	 	 同上				SHA224withDSA SHA256withDSA SHA384withDSA SHA512withDSA 
+		
+		ECDSA 算法  椭圆曲线数字签名算法 Elliptic Curve Digital Signature Algorithm
+		微软 序列号  99年作为AISSI的标准 2000年成为IEE 和NIST的标准  
+		速度快  强度高 签名短 
+		
+		JAVA7之前没有提供支持
+		实现方		默认长度    密钥长度	签名长度		算法 
+		BC			256	 		112~571		160/224		RIPEMD160withECDSA 、 SHA224withECDSA  
+		BC/JDK 		256	 		112~571		128.160...	NONEwithECDSA  SHA1withECDSA  SHA256withECDSA  SHA384withECDSA  SHA512withECDSA
+ 
+ 
+ 
+	消息摘要算法
+		MD(Message Digest)
+			特点：128 位 单向加密
+			MD5： MD家族(128位摘要信息)   JDK实现
+			MD2：128					  JDK实现
+			MD4：128					  Bouncy Castle	
+			
+		SHA(Secure Hash Algorithm)  安全散列  
+		固定长度摘要信息 SHA-1  SHA-2(SHA-224 SHA-256 SHA-384 SHA-512)
+		算法公开	长度  实现方
+		SHA-1		160   JDK实现
+		SHA-224		224	  Bouncy Castle
+		SHA-256		256	  JDK 
+		SHA-384		384	  JDK 
+		SHA-512		512	  JDK 
+		实现步骤:
+			1.发送方 公布消息摘要算法
+			2.		 对消息进行摘要处理 
+			3.       发布摘要消息
+			4.		 发送消息
+			5.接收方 接受并 进行消息鉴别(将原始信息进行摘要，然后与收到的摘要进行比对)
+			
+			msg:原始消息+key+ 时间戳
+			1.加入约定Key
+			2.增加时间戳
+			3.排序
+			http://**?msg=12HSAD74mj&timestamp=130932392312
+		MAC(Message Authentication) 消息认证码  也叫 HMAC 含有密钥的散列函数算法
+		作用： 验证数据完整性  数字签名核心算法 兼容了两种MD和SHA 算法
+		MD系列：HmacMD2 HmacMD4 HmacMD5
+		SHA系列：HmacSHA1 HmacSHA224 HmacSHA256 HmacSHA384 HmacSHA512
+		应用场景: SecureCRT
+		实现步骤：
+			1. 公布消息摘要算法
+			2. 构建密钥
+			3. 发送密钥
+			4. 对消息进行摘要处理
+			5. 发送消息摘要
+			6. 发送消息
+			7. 消息鉴别
+	
+		结论：通过CC 可以简化操作  BC 实现偏底层   
+		
+		其它消息摘要算法：Bouncy Castle 实现 
+			RipeMD、Tiger、Whirlpool  、GOST3411
+			
+ 
+ 
+ 
+	柯克霍夫原则：数据的安全基于密钥而不是算法的保密 , 即 密钥保密，算法公开  现代密码学的设计基本原则。
+ 
+ 
+	加解密基础
+		密码分类
+			时间：古典密码：以字符为基本加密单元
+				  现代密码：以信息块为基本加密单元
+			保密内容：
+				受限制算法    军事领域  古典密码
+				基于密钥算法  			现代密码 
+			密码体制：
+				对称密码：单钥密码或私钥密码  		加密解密密钥相同
+				非对称密码：双钥密码或公钥密码  	密钥分为公钥 私钥 
+			明文处理方法：
+				分组密码： 加密时将 名 分成固定长度的组，用同一密钥和算法对每一块加密，输出也是固定长度的密文，多用于网络加密
+				流密码：序列密码 加密时每次加密一位 或者一个字节明文。
+			其它：
+				散列函数：消息摘要函数 哈希函数   如MD5 SHA安全散列算法 MAC 消息认证码算法
+					作用：用来验证数据的完整性
+					特点 长度不受限制 哈希值易计算 散列值计算过程不可逆
+				数字签名： 主要是针对以数字的形式存储的消息进行处理 
+				
+		Java安全组成
+			OSI (Open System Interconnection)
+				网络通信：
+					1.物理层2.数据链路层3.网络层4.传输层5.会话层6.表示层7.应用层
+						
+				安全机制： 加密机制 数字签名机制 访问控制机制 数据完整性机制 认证机制 业务流填充机制 路由控制机制 公证机制
+					
+				安全服务： 认证(鉴别)  访问控制服务  数据保密性服务 数据完整性服务 抗否认性服务
+					
+				TCP/IP :
+						TCP/IP			OSI
+						1.网络接口层	1、2
+						2.网络层 		3
+						3.传输层 		4
+						4.应用层 		5、6、7
+				安全服务：抗否认性服务  数据完整性服务 数据保密性服务      访问控制服务 				认证服务
+				 
+				安全机制： 	公正机制  数据完整性机制  加密机制 业务流填充   访问控制机制 路由控制机制   认证机制 数字签名机制
+		
+		
+				Java安全组成
+					JCA Java Crypography Architecture	提供基本加密框架如；消息摘要 数字签名
+					JCE Java Crypography Extension		JCA基础上扩展 DES AES RSA
+					JSSE	Java Secure Socket Extension 提供基于SSL的加密功能 主要用于网络传输
+					JAAS    Java Authentication and Authentication Service
+			
+		第三方Java扩展
+ 						如： security.provider.1=sun.security.provider.Sun
+						使用JDK以外的扩展包需要修改资源文件并增加相关的内容，java/jdk/jre/lib/security/java.security
+				Bouncy Castle 两种支持方案  1.配置 2.调用
+				
+				Commons Codec 
+						Apache   Base64 二进制 十六进制 字符集编码   Url编码/解密
+		相关Java包类
+			java.security  	消息摘要
+			javax.crypto 	安全消息摘要 消息认证码 
+			java.net.ssl  安全套接字 HttpsURLConnection  SSLContext
+ 
+ 
+		Base64 算法
+		实现：  JDK  	Commons Codec    Bouncy Castle
+ 
+			下载jar：bcprov-jdk15on-151.jar
+					 commons-codec-1.10.jar 
+			应用场景:e-mail 密钥 证书文件   现在更多的使用SHA
+			定义： 基于64个字符的编码 
+				0~25 A~Z
+				26~51 a~z
+				52~61 0~9
+				62 +
+				63 /
+				(pad)	=
+			关于RFC 2045
+			衍生：Base16  Base32  Url Base64 
+ 
+		对称加密算法： 初等的
+		DES  Data  Encryption Standard 数据加密标准 
+			长度  默认 实现方   工作模式         			填充方式
+			56		56  JDK 	ECB CBC PCBC CTR CTS CFB	NoPadding PKCS5Padding ISO10126Padding
+								到 128 OFB OFB8 到 128
+			64      56  BC      同上 						PKCS7Padding。。。
+			违反了柯克霍夫原则	 安全问题
+		3重DES(Triple DES 或  DESede ) DES 的好处 密钥长度增强  迭代次数提高
+			长度 	 默认 实现方   工作模式         			填充方式
+			112 168	 168	 JDK 	ECB CBC PCBC CTR CTS CFB	NoPadding PKCS5Padding ISO10126Padding
+								到 128 OFB OFB8 到 128
+			128 192	 168     BC      同上 						PKCS7Padding。。。
+			算法效率低 处理速度慢
+		AES 
+			应用场景： 移到通信系统加密以及基于SSH协议的软件 SSHClient  secureCRT
+			高级  DES替代者  安全性递增
+			长度 	 		默认 实现方   工作模式         			填充方式
+			112 192 256	    128	 JDK 	ECB CBC PCBC CTR CTS CFB	NoPadding PKCS5Padding ISO10126Padding
+										到 128 OFB OFB8 到 128
+			112 192 256	BC   同上 BC  	同上 						PKCS7Padding。。。
+			
+		PBE (Password Based Encryption) 基于口令加密  结合了消息摘要算法和对称加密算法的所有优点
+			加盐Salt  对已有的算法进行 包装  JDK BC 实现   常用的有 PBEWithMD5AndDES
+			算法               密钥长度  默认   实现  工作模式  填充方式  
+			PBEWithMD5AndDES    64			64   BC		CBC		PKCS5Padding
+			PBEWithMD5AndRC2    112			128  BC     CBC		PKCS7Padding。。。
+			PBEWithSHA1AndDES	64			64	 BC     CBC     ISO10126Padding
+			PBEWithSHA1AndRC2	128			128  BC     CBC     ZeroBytePadding
+			PBEWithSHAAndIDEA-CBC 128		128  BC     CBC 
+			PBEWithSHAAnd2-KeyTripleDES-CBC 128  BC     CBC 
+			PBEWithSHAAnd3-KeyTripleDES-CBC 192  BC     CBC 
+		发送者                            接受者
+			1 构建口令
+			2 公布口令  -------》
+			3 构建盐
+			4 使用口令 盐 对数据 加密 
+			5 发送盐 加密数据   ---------》
+										6 使用盐 口令对数据进行解密
+			
+		非对称密码：
+		高级 双保险    公钥   私钥 (自己保存)
+		
+		DH 		Diffie -Hellman 密钥交换算法
+			构建本地密钥    密钥对称
+			512-1024(64倍数)  默认1024  JDK 实现
+		
+			初始化发送方 密钥  用到的类
+			KeyPairGenerator 指定算法名称  KeyPairGenerator senderKeyPairGenerator = KeyPairGenerator.getInstance("DH");
+			KeyPair 指定加密的提供方  可以对象或者名称
+				(关于Provider的内容可以查看Java实现Base64 加密 1-5小节)
+			PublicKey
+		
+			初始化接受方密钥	用到的类
+			KeyFactory			生成密钥
+			X509EncodedKeySpec  根据ASN.1标准进行密钥编码
+			DHPublicKey			
+			DHParameterSpec		参数的集合
+			KeyPairGenerator
+		
+			密钥构建
+			KeyAgreement		提供密钥一致性协议的功能 static KeyAgreement getInstance(String algorithm);生成实现密钥一致算法的KeyAgreement对象
+			SecretKey			秘密密钥  生成分组的密钥
+			KeyFactory
+			X509EncodedKeySpec
+			PublicKey
+		
+			加密 解密
+			Cipher  赛破
+				
+				初始化DH算法密钥对
+			发送方						接收方
+			1. 构建发送方密钥  
+			2. 公布发送方密钥  ----->
+										3. 使用发送方密钥构建自己的密钥
+						<-------		4. 公布接受者公钥
+				加密消息传递
+			发送方						接收方
+			1. 使用本地 密钥加密消息
+			2. 发送加密消息 	------>	
+										3. 使用本地密钥解密消息
+		RSA    -------基于因子分解
+		唯一广泛接受并实现  数据加密& 数字签名 
+		公钥加密 私钥解密  私钥加密 公钥解密 
+		
+		密钥长度    默认值  实现方  工作模式  填充方式 
+		512~65536	1024	JDK实现	ECB			NoPadding PKCS1Padding OAEPWITHMD5AndMGF1Padding OAEPWITHSHA1AndMGF1Padding
+		64整数倍	2048	BC		NONE		同上
+		
+		EIGamal -------基于离散对数
+		公钥加密算法   BC实现   
+		密钥长度    默认值  实现方  工作模式 		 填充方式 
+		160~16384	1024	BC实现	ECB	NONE		NoPadding PKCS1Padding OAEPWITHMD5AndMGF1Padding OAEPWITHSHA1AndMGF1Padding
+		 8整数倍
+		
+		发送方						接收方
+								1. 构建密钥对  
+			<-----------		2. 公布密钥  
+		3. 使用公钥加密数据
+		4. 发送加密数据		----->
+								5. 使用私钥解密数据
+		
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
