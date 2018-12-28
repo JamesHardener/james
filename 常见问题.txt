@@ -1,0 +1,12 @@
+1.输入ifconfig 命令报错 ifconfig command not found
+	解决方法1：查看是否安装ifconfig,输入 cd /sbin  ,  ls查看是否有ifconfig  ,没有就需要安装，输入sudo yum install net-tools
+	
+	解决方法2：是否环境因素影响，/sbin目录下，输入 /sbin/ifconfig就可以使用，或者export PATH=$PATH:/sbin 设置后，下次可以直接访问
+	
+2.	Job for network.service failed because the control process exited with error code问题	
+	查看/etc/sysconfig/network-scripts下，将其余无关的网卡位置文件全删掉，避免不必要的影响，即只留一个以ifcfg开头的文件，
+	查看下你电脑有没有禁用了VMware DHCP service和VMware NAT service 这几个vm服务，如果禁用则开启
+	在VMWare的编辑-虚拟网络编辑器中将网络模式改为桥接
+	
+	
+	
