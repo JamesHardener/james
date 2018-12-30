@@ -1,4 +1,4 @@
-linux备份
+linux备份  2018年12月23日16:05:17
 Linux达人养成计划
 	Linux发展史
 	Minix 发明人 Andrew S.Tanenbaum教授为了给同学上课买了UNIX操作系统，参考写了 Minix，2000年开源
@@ -156,15 +156,396 @@ Linux达人养成计划
 				which 文件名  搜索命令所在路径及别名
 					有些命令找不到，因为它是Linux的shell命令 如cd
 					echo $PATH 系统环境存在,故ls 可以直接使用
+					
 			文件搜索命令find   特点：根目录下遍历一遍
+				find  [搜索范围] [搜索条件]  搜索文件
+					find  / -name install.log  避免大范围搜索，非常消耗系统资源
+					通配符 *匹配任意内容 ？匹配任意一个字符 []匹配括号里任意一个字符
+					find /root -iname install.log 不区分大小写
+					find /root  -user  root    按照所有者搜索
+					find /root -nouser      查找没有所有者的文件
+						①sys proc 中由内核产生的文件可能没有所有者
+						②外来文件 如U盘来的文件
+					find /var/log/ -mtime +10  查找10天前修改的文件
+					-10 10天内修改文件   10 当天修改的文件   +10  10天钱修改的文件
+					atime 文件访问时间 ctime 改变文件属性 mtime 修改文件内容 
+					find  .	 -size 25k   查找文件大小为25KB的文件
+					find  .	 -inum 262422  查找i节点是262422的文件
+					
+					find /etc/ -size +20k -a -size -50k   查找/etc/目录下,大于29KB并且小于50KB的文件
+						-a  and  逻辑与,两个条件都满足   -o  or 逻辑或,两个条件满足一个即可
+					find /etc -size +20k -a -size -50k -exec ls -lh {} \;  查找/etc/目录下,大于29KB并且小于50KB的文件,并显示详细信息
+						-exec /-ok 命令{}\;  对搜索结果执行操作
+					
 			字符串搜索命令grep
+				grep [选项]  字符串 文件名  在文件中匹配符合条件的字符串
+						选项： -i  忽略大小写  -v 排除指定字符串
+				
 			find命令和grep命令的区别
+			find命令:在系统中搜索符合条件的文件名,如果需要匹配,使用通配符匹配,通配符是完全匹配
+			grep命令:在文件中搜索符合条件的字符串,如果需要匹配,使用正则表达式进行匹配,正则表达式包含匹配
+			
 		帮助命令
+			man   man  命令  获取指定命令的帮助
+				  man -f 命令  查看命令拥有哪个级别的帮助 相当于 whatis 命令
+				  man -k 命令 相当于apropos 命令   查看和命令相关的所有帮助
+				man的级别
+				1:	查看命令的帮助
+				2:	查看可被内核调用的函数的帮助
+				3:	查看函数和函数库的帮助
+				4:	查看特殊文件的帮助(主要是/dev目录下的文件)
+				5:	查看配置文件的帮助
+				6:	查看游戏的帮助
+				7:	查看其它杂项的帮助
+				8:	查看系统管理员可用命令的帮助
+				9:	查看和内核相关文件的帮助
+			
+			选项帮助
+				命令 --help  获取命令选项的帮助 如ls -help
+			shell内部命令帮助
+				help shell内部命令  获取shell内部命令的帮助 如whereis cd  help cd 
+			info 命令   详细命令帮助	
+				   -回车  进入子帮助页面(带有* 标记)  -u 进入上层页面
+				   -n 进入下一个帮助小节 -p 机内上一个帮助小节 -p 退出 
+				   
 		压缩和解压命令
+			常用压缩个 .zip .gz .bz2    (.tar.gz  tar.bz2 最常见) 
+				zip 压缩文件名 源文件  			压缩文件  加扩展名为了方便记忆
+				zip -r 压缩文件名 源目录  		压缩目录
+				unzip 压缩文件名
+				
+				gzip 源文件  压缩为.gz格式的压缩文件,源文件会消失
+				gzip -c 源文件 > 压缩文件  压缩为.gz 格式,源文件保留
+				gzip -r 目录    压缩目录下的所有子文件,但是不能压缩目录
+				gzip -d 压缩文件   解压缩
+				gunzip 压缩文件    解压缩文件
+				
+				bzip2 源文件   压缩为.bz2格式,不保留源文件
+				bzip2 -k 源文件   压缩之后保留源文件   不能压缩目录
+				bzip2 -d 压缩文件  解压缩 ,-k 保留压缩文件
+				
+
+				打包命令tar
+				tar -cvf 打包文件名 源文件 如 tar -cvf long.tar long 
+					选项：-c打包 -v显示过程 -f 指定打包后的文件名
+				tar -xvf 打包文件名    解压包	tar -cvf long.tar 
+				
+				.tar.gz格式是先打包为.tar 格式,再压缩为.gz格式
+				tar -zcvf 压缩包名.tar.gz 源文件    压缩为.tar.gz格式
+				tar -zxvf 压缩包名.tar.gz 			解压缩.tar.gz
+				tar -jcvf 压缩包名.tar.bz2 源文件    压缩为.tar.bz2格式
+				tar -jxvf 压缩包名.tar.bz2 			解压缩.tar.bz2
+				tar -jcvf jp.tar.bz2  -C /tmp/  解压缩到指定/tmp/目录下
+				tar -zcvf /tmp/test.tar.gz   jp   anaconda.cfg  解压多个文件(jp anaconda.cfg)到指定目录/tmp/下
+				tar -ztvf test.tar.gz         只查看压缩包里有什么,不解压
+				
 		关机和重启
-		其它
-		
-Linux软件安装管理
+			shutdown [选项] 时间  
+				选项: -c取消前一个关机命令  -h 关机 -r 重启
+			shutdown -r 05:30 &  把操作放到后台,不占用控制台 
+			halt   poweroff  init0    关机  不安全，不会正确保存服务
+			reboot  比较安全 init6	尽量不用用			重启
+			logout  退出登录
+			
+			系统运行级别  0关机 1 单用户 2 不完全多用户，不含NFS服务  3 完全多用户
+			4未分配 5 图形界面 6 重启
+			cat /etc/inittab    修改系统默认运行级别  id:3:initdefault:
+			runlevel   查询系统运行级别
+			
+		其它命令
+			挂载命令	
+				mount  查询系统中已经挂载的设备
+				mount -a  依据配置文件/etc/fstab的内容，自动挂载
+				mount [-t文件系统][-o特殊选项] 设备文件名 挂载点(已经存在的空白盘符)     挂载命令格式
+				选项：-t 文件系统:加入文件系统类型来指定挂载的 类型,可以是ext3、ext4、iso9660等文件系统
+					  -o 特殊选项:可以指定挂载的额外选项
+					example:
+						cd  /home           切换到home目录
+						vi hello.sh			编辑hello
+						chmod 755 hello.sh	给文件授权
+						./hello.sh			本目录执行文件
+						mount -o remount,exec /home   重新挂载
+						
+						挂载光盘
+						mkdir /mnt/cdrom/       建立挂载点  -t iso9660 也可以省略
+						mount -t iso9660  /dev/cdrom   /mnt/cdrom/   挂载光盘 
+						mount   /dev/sr0    /mnt/cdrom/    建议使用
+						卸载命令
+						umount 设备文件名或挂载点  如 umount /mnt/cdrom     必须卸载
+						
+						挂载U 盘
+						fdisk -l  查看系统已经识别的硬盘(U 盘)
+						mount -t vfat /dev/sdb1 /mnt/usb/  挂载U盘   
+							注意:Linux默认是不支持NTFS文件系统的 ,可以下载ntfs.3g 下载安装就可以支持,但是只能读
+							vfat指的是Windows中的 fat32位系统
+							
+			用户登录查看和用户交互命令
+				W 用户名    查看用户登录信息
+					命令输出: 
+					User   用户名   TTY  登陆终端   FROM  从哪个IP地址登陆  LOGIN@   登陆时间
+					IDLE   用户闲置时间  WHAT 当前正在运行的命令  PCPU 当前进程所占用的时间
+					JCPU   和该终端连接的所有进程占用的时间(不包括过去，包括当前正在运行的后台作业的时间)
+				who  用户名 
+					命令输出:
+						用户名 登陆终端 登陆时间 来源IP地址
+				last  查询当前登陆和过去登陆的用户信息   默认读取/var/log/wtmp文件数据		不能直接vi查看
+					命令输出:
+						用户名 登陆终端 来源IP地址 登陆时间 退出时间
+				lastlog  查询所有用户的最后一次登陆时间   默认读取/var/log/lastlog文件数据
+					命令输出:
+						用户名 登陆终端 来源IP地址 最后一次登陆时间 
+
+
+						
+Shell 基础		2018年12月29日16:04:55	
+		Shell是什么
+			Shell是一个命令行解释器,它为用户提供了一个向Linux内核发送请求以便运行程序的界面系统级程序，用户可以用Shell来启动、挂起、停止甚至编写一些程序
+			Shell还是一个功能相当强大的编程语言,易编写,易调试,灵活性较强.Shell是解释执行的脚步语言,在Shell中可以直接调用Linux系统命令。
+		Shell分类
+			Bourne Shell : 从1979年前Unix就开始使用Bourne Shell ,它的主文件名为sh    基本淘汰,功能太少
+			C Shell :  C Shell 主要在BSD版的Unix系统中使用,其语法和C语言相类似而得名
+			彼此不兼容,Bourne家族主要包括sh、ksh、Bash(Linux中标准Shell)、psh、zsh 		C家族主要包括: csh、tcsh
+			echo $SHELL     输出:/bin/bash  
+			Bsah： Bash与sh兼容,现在使用的Linux就是使用的Bash作为用户的基本Shell
+			vi /etc/shells  输出	/bin/sh   /bin/bash   /bin/tcsh   /bin/csh    /sbin/nologin
+			
+			echo 输出命令
+			echo [选项 ][输出内容]  
+				选项：-e  支持反斜线控制的字符转换
+				\a 输出警告  \b 退格键,向左删除键  \n 换行符  \r  回车键  \t 制表符 tab键 
+				\v 垂直制表符  \Onnn 按照八进制ASCII码表输出字符  \xhh 按照十六进制ASCII码表输出字符
+		第一个脚本
+			vi hello.sh
+			#!/bin/bash      不能省略
+			# The first program
+			echo -e "\e[1;34m 天上掉下个林妹妹 \e[0m"    
+					\e[1;34m 开启颜色显示			\e[0m 关闭颜色显示   
+			
+			脚本执行
+			① 赋予执行权限,直接运行	chmod 755 hello.sh      ./hello.sh 
+			② 通过Bash调用执行脚本		bash hello.sh 
+			
+			Bashde基本功能
+				①命令别名与快捷键
+					alias   alias 别名 ='原命令'  这种别名,重启就会消失
+					vi ~/.bashrc   写入环境变量配置文件
+					unalias 别名   删除别名
+					source .bashrc  直接生效 别名,不用重启登录
+				
+				命令生效的顺序
+					第一顺位执行用 绝对路径或相对路径执行的命令  第二顺位执行别名  第三顺位执行Bash 的内部命令
+					第四顺位执行按照$PATH环境变量定义的目录查询顺序找到的第一个命令
+					
+					常用快捷键
+				Ctrl + c 强制终止当前命令  Ctrl + l  清屏 	Ctrl + a  光标移动到命令行首    Ctrl + e 光标移动到命令行尾
+				Ctrl + u 从光标所在位置删除到行首		Ctrl + z 把命令放入到后台			Ctrl + r 在历史命令中搜
+				
+				②历史命令
+					history[选项][历史命令保存文件]   -c 清空历史命令   -w 把缓存中的历史命令希尔历史命令保存文件~/.bash_history
+					历史命令默认保存1000条,可以在环境变量配置文件/etc/profile中进行修改  HISTSIZE=1000
+					
+					历史命令调用:
+						使用上下箭头调用之前的历史命令 
+						使用 !n 重复执行第n条历史命令
+						使用 !! 重复执行上一条命令
+						使用 !字符串 重复执行最后一条以 该字符串开头的命令
+					
+					命令与文件补全
+						在Bash中,命令与文件的补全是非常方便与常用的功能,我们只要在输入命令或文件时,按Tab 键 就会自动进行补全
+					
+				③输出重定向
+					标准输入输出	设备  设备文件名	文件描述 	类型
+									键盘	/dev/stdin		0		标准输入输出
+									显示器	/dev/sdtout		1		标准输出
+									显示器	/dev/sdterr		2		标准错误输出
+					
+					类型					符号			作用
+					标准输出定向			命令 > 文件		以覆盖的方式把命令正确输出到指定的文件或设备中
+											命令 >> 文件	以追加的方式把命令正确输出到指定的文件或设备中
+					标准错误输出重定向		命令 > 文件		以覆盖的方式把命令的错误输出到指定的文件或设备中
+											命令 >> 文件	以追加的方式把命令的错误输出到指定的文件或设备中
+					正确错误输出同时保存	命令 >>文件 2>&1 以追加的方式把正确错误输出都保存到同一个文件中
+											命令& >>文件	以追加的方式把正确错误输出都保存到同一个文件中
+											命令 >>文件1  2>>文件2 把正确输出追加到文件1,把错误的输出追加到文件2中
+											
+					输入重定向  wc [选项][文件名]		 -c 统计字节数   -w 统计单词数  -l 统计行数	
+								命令 < 文件  把文件作为命令的输入
+								命令 << 标识符 标识符把标识符之间的内容作为命令的输入
+				④多命令顺序执行
+					多命令执行符		格式			作用
+						;  			命令1 ;命令2 		多个命令顺序执行,命令之间没有逻辑联系
+						&&			命令2&&命令2		逻辑与,命令1执行正确,命令2才会执行
+						||			命令1||命令2		逻辑或,命令1执行不正确,命令2执行,否则命令2不执行
+					管道符
+						命令1 | 命令2   命令1的正确输出作为命令2的操作对象
+							ll -a /etc/ | more 查询etc目录下的文件分屏显示
+						netstat -an   查看系统中的所有网络连接
+						netstat -an | grep ESTABLISHED | wc -l  查看有多少个正在连接服务器的客户端
+						
+				⑤Shell中特殊符号
+					通配符			作用
+					?				匹配一个任意字符
+					*				匹配0或者任意多个字符
+					[]				匹配括号中任意一个字符
+					[-]				匹配任意一个字符 -代表范围
+				    [^]				逻辑非 匹配不是括号中的内容的一个字符
+					其它特殊符号	
+					''				单引号,在单引号中所有的特殊符号,如"$"和"`"(反引号)都没有特殊含义
+					""				双引号,在双引号中特殊符号都没有特殊含义,但是"$"、"`"、"\"是例外,调用变量的值,引用命令,转义符
+					``				反引号,反引号括起来的内容是系统命令,在Bash中会先执行它。和$()作用一样,因为容易看错,推荐使用$()				
+					$()				引用系统命令
+					#				在Shell脚本中,#开头的行代表注释
+					$				用于调用变量的值,如需要调用变量name的值时,需要用$name的方法得到变量的值
+					\				转义符,跟在\之后的特殊符号将失去特殊含义,变为普通字符.如\$ 将输出 "$"符号,而不是当做是变量的引用
+
+						
+Linux软件安装管理   2018年12月30日16:05:32
+			
+	软件包管理简介
+		软件包分类
+			源码包  脚本安装包
+			二进制包：RPM包、系统默认包
+			
+			源码包优点: 开源有足够能力可以修改源代码 可以自由选择所需的功能 
+						软件是编译安装,所有更适合自己的系统更稳定高效 卸载方便
+				  缺点: 安装过程步骤较多,尤其安装较大的软件集合时(如LAMP环境搭建),容易出现拼写错误
+						编译过程时间较长,安装比二进制安装时间长
+						安装过程保存新手很难解决
+			二进制包优点：包管理系统简单,只通过几个简单命令就可以实现包的安装、升级、查询和卸载
+						  安装速度比源码包快很多
+					缺点:经过编译,不能再看到源代码  功能选择不如源代码包灵活  依赖性
+			脚本安装包	:把复杂的安装过程写成程序脚本,初学者可以执行程序脚本实现一键安装,时间安装过程还是源码包和二进制包
+					优点: 安装简单、快捷 
+					缺点: 完全丧失了自定义性
+			
+	rpm命令管理
+			RPM包命名规则
+				来源: 系统光盘的Packages包中
+				命名原则 httpd-2.2.15-15.el6.centos.1.i686.rpm 
+					httpd软件包名  -2.2.15 软件版本  -15 软件发布次数 .el6.centos 适合Linux平台
+					.1.i686 适合的硬件平台 .rpm 包扩展名
+				RPM包依赖性
+					树形依赖 a -> b -> c 
+					环形依赖 a -> b -> c ->a 
+					模块依赖 查询网址: www.rpmfind.net   
+						.so.2  以.so.数字结尾的  叫 库依赖
+			安装命令
+				包全名: 操作的包是没有安装的软件包时,使用包全名.而且要注意路径
+				包名: 操作已经安装的软件包时,使用包名是搜索/var/lib/rpm/中的数据库
+				rpm -ivh 包全名  RPM安装  必须进入packages包,或者使用绝对路径
+				选项：-i(install)安装 -v(verbose)显示详细信息  -h(hash)显示进度  --nodeps不检测依赖性
+				
+			升级与卸载
+				rpm -Uvh 包全名  RPM包升级  -U upgrade  升级 
+				rpm -e 包名   卸载   e erase  卸载 
+				
+			RPM包查询
+				rpm -q  包名   查询是否安装   -q 查询 query
+				rpm -qa  查询所有已经安装的RPM包  -a  all  所有   如 rpm -qa | grep httpd 
+				rpm -qi 包名   查询软件包详细信息   -i information 查询软件信息  -p 查询未安装包信息  -l 列表
+				rpm -qf 系统文件名   查询系统文件属于哪个RPM包   -f  file 
+				rpm -qR 包名  查询软件包的依赖性   -R requires依赖性   -p 查询未安装包信息
+				
+				默认安装位置
+				/etc/ 配置文件   /uer/bin/可执行命令   /usr/lib/函数库   /usr/share/doc/软件手册  usr/share/man/帮助文件 
+				
+			RPM包校验
+				rpm -V  已经安装的包名   -v verify 
+				
+				rpm  -V httpd 
+				S.5....T. c /etc/httpd/conf/httpd.conf
+				验证内容信息:
+				S  文件大小是否改变
+				M  文件的类型或文件的权限是否更改
+				5  文件MD5校验和是否改变,即文件内容是否改变
+				D  设备的主从代码是否改变
+				L  文件路径是否改变
+				U  文件的属主是否改变 
+				G  文件的属组是否改变
+				T  文件的修改时间是否改变
+				文件类型 
+					c配置文件config file  d普通文件documentation  g鬼文件ghost file,不应该包含在RPM包   
+					L授权文件license file  r描述文件read me 
+					
+				rpm2cpio 包全名 | cpio -idv .文件绝对路径  RPM包中文件提取	
+					rpm2cpio  将rpm包转换为cpio 格式的命令 
+					cpio 是一个标准工具,它用于创建软件档案文件和从档案文件中提取文件
+					cpio 选项 < []文件[设备]  提取文件标准格式	  -i  copy-in模式,还原   -d 还原时自动新建目录    -v 显示还原过程
+					
+	yum在线管理
+		     将所有软件包放在官方服务器上,当进行yum在线安装时,可以自动解决依赖性问题
+			 redhat的yum 在线安装需要付费
+			 
+			 yum 源文件
+				vi /etc/yum.repos.d/CentOS-Base.repo 
+				[base]  容器名称,一定放在[] 中
+				name  容器说明,可以自己随便写
+				mirrorlist 镜像站点,这个可以注释掉
+				baseurl  我们的yum源服务器的地址,默认CentOS官方的yum,也可以改成自己喜欢的yum
+				enabled  此容器是否生效,不写或者enabled=1都是生效,0 不生效
+				gpgcheck 如1指 RPM的数字证书生效,0 不生效
+				gpgkey  数字证书的公钥保存位置,不用修改
+				
+				
+			 光盘搭建yum源
+				1.挂载光盘
+				mkdir /mnt/cdrom  建立挂载点
+				mount /dev/cdrom  /mnt/cdrom/ 挂载光盘
+				2.使网络yum失效
+				cd /etc/yum/repos.d/   进入yum源目录
+				mv CentOS-Base.repo  CentOS-Base.repo.bak 修改yum源文件后缀名,使其失效
+				3.使光盘yum源生效
+				vim CentOS-Media.repo 修改 baseurl=file:///mnt/cdroom 地址为自己挂载光盘地址
+					# 注释掉下面两行file目录   enabled=0 修改为 enabled= 1 
+				
+				
+			 yum命令
+				
+				常用yum命令
+					yum list  查看yum源有哪些软件可以安装
+					yum search 关键字  搜索服务器上所有和关键字相关的包
+					yum -y  install 包名    install 安装  -y 自动回答yes  
+						如 yum -y install gcc 编译器
+					yum -y update 包名    升级 	
+					yum -y remove 包名     卸载 
+					
+					yum grouplist  列出所有的可用组列表
+					yum groupinstall 软件组名  安装指定软件组
+					yum groupremove 软件名   卸载指定软件组
+	源码包管理
+			安装位置不同带来的影响
+			RPM包安装的服务可以使用系统服务管理命令 来管理 
+			如Apache的启动方法是：/etc/rc.d/init.d/httpd start
+			源码包安装的服务不能被服务管理命令 管理,因为没有安装到默认路径中,只能绝对路径进行服务管理
+			/usr/local/apache2/bin/apachectl start 
+			
+			安装源码包
+			1.安装准备  安装C语言编译器  下载源码包  http://mirror.bit.edu.cn/apache/httpd/
+			2.安装注意事项 
+				源代码保存位置: /esr/local/src/
+				软件安装位置: /usr/local/ 
+				如何确定安装过程保存:
+				      安装过程停止  并出现error 、warning 或no的提示
+			3. 源码包安装过程
+				下载源码包  解压下载的源码包 进入解压缩目录
+				cd httpd-2.2.9
+				./configure 软件配置与检查
+					定义需要的功能选项  检测系统环境是否符合安装要求 把定义好的功能选项和检测系统环境的信息都写入Makefile文件,用于后续的编辑
+				./configure  --prefix=/usr/local/apache2
+				make   编译     make clean 报错之后,执行清除缓存
+				make install  编译安装
+				/usr/local/apache2/bin/apachectl start  启动 
+				
+				源码包目录下 有个INSTALL 文件  vi INSTALL 就可以看到安装步骤
+				
+			4. 卸载源码包   直接删除安装目录,不会遗留任何垃圾文件	
+					
+	脚本安装包
+			1.准备工作
+				关闭RPM包安装的httpd 和Mysql  保证yum 源正常使用 关闭SELinux和防火墙
+				vi /etc/selinux/config 打开之后把默认的改为 SELINUX=disabled
+			2.下载脚本一键安装包    https://lnmp.org/install.html ,使用WinSCP 传输到虚拟机
+			wget -c http://soft.vpser.net/lnmp.lnmp1.0-full.tar.gz&& tar zxvf lnmp1.0-full.tar.gz && cd lnmp1.0-full && ./centos.sh 
 
 
 
