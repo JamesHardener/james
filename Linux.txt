@@ -550,19 +550,497 @@ Linux软件安装管理   2018年12月30日16:05:32
 
 
 Linux服务管理
+	简介与分类
+		系统运行级别 
+			系统运行级别  0关机 1 单用户 2 不完全多用户，不含NFS服务  3 完全多用户
+			4未分配 5 图形界面 6 重启
+			修改运行级别:  vim /etc/inittab  里 id:3:inirdefault   系统开机直接进入哪个运行级别
+			
+		服务的分类
+			Linux服务-----  RPM包默认安装的服务 -----   独立的服务
+												-----	基于xinetd服务
+					 ----	源码包安装的服务
+			服务启动: 在当前系统中让服务运行,并提供功能
+			服务自启动: 让服务在系统开机或者重启之后,随之系统启动而自动启动	
+
+			查询已经安装的服务
+				chkconfig --list  查看服务自启动状态,可以看到所有RPM包安装的服务
+				源码包安装的服务位置一般是 /usr/local/下	
+			
+		服务与端口
+			ps aux   查看系统服务状态信息
+			netstat -tlunp  列出系统中所有已经启动的服务
+				-t 列出tcp数据  -u 列出udp数据   -l 列出正在监听的网络服务(不包含已经连接的网络服务) 
+				-n 用端口号来显示服务,而不是服务名   -p 列出服务的进程ID(PID) -a  可以看到正在连接的端口
+					
+			
+			
+	RPM包服务管理
+			源码包安装的服务位置一般是 /usr/local/下 usr Unix System Resource ,即Unix系统资源的缩写
+			RPM默认安装位置
+				/etc/init.d/ :启动脚本位置
+				/etc/sysconfig/ :初始化环境配置文件位置
+				/etc/ :配置文件位置
+				/etc/xinetd.conf :xinetd配置文件
+				/etc/xinetd.d/ :基于xinetd服务的启动脚本
+				/var/lib/  :服务产生的数据存放在这里
+				/var/log/  :日志
+			独立服务启动：
+				/etc/init.d/独立服务名          start | stop | status | restart
+				service 独立服务名 				start | stop | status | restart
+				service 只能使用RPM安装的服务,它是Redhat 系列特有的
+				
+			独立服务自启动
+				chkconfig  [ --level运行级别 ][ 独立服务名 ][ on|off ] 
+				①修改/etc/rc.d/rc.local文件    (登录之前最后启动服务) 里面touch /var/lock/subsys/local 
+					推荐使用 															/etc/init.d/httpd start 
+				
+				chkconfig --list | grep httpd 
+				②chkconfig --level 2345 httpd on  修改httpd服务的默认是否自启动状态
+				③使用ntsysv 命令管理自启动   
+				②③是同一种方法
+				
+			xinnetd服务启动
+				①安装xinetd     yum -y install xinetd
+				②xinetd服务的启动    rsync服务是Linux和Linux之间进行数据同步的服务
+					vi /etc/xinetd.d/rsync  disabled   = yes 改为 disabled   = no 然后重启xinetd服务 service xinetd restart
+					service rsync			服务的名称为Telnet  
+					{
+						flags  = REUSE	标志为REUSE,设定TCP/IP socket 可重用
+						socket_type = stream 使用TCP协议数据包
+						wait   = no 		允许多个连接同时连接
+						user   = root		启动服务的用户为root
+						server = /usr/bin/rsync 	 服务的启动程序
+						log_on_failure += USERID	 登录失败后,记录用户的ID
+						disabled   = no              服务不启动
+					}
+				自启动xinetd服务    
+					不支持service命令启动,只有独立的服务才有运行级别,基于xinetd的服务没有运行级别 
+					 chkconfig rsync off 不仅开机不自启动,也会停掉当前服务
+					① chkconfig rsync  on   开机自启,会启动服务 ,启动服务,也会开机自启动
+					② ntsysv  把[变为* 
+				
+				
+	源码包服务管理
+			源码包服务的启动	使用绝对路径,调用启动脚本来启动.不同源码包的启动脚本不同,可以查看源码包的安装说明,查看启动脚本的方法
+				usr/local/apache2/bin/apachectl start | stop 
+			源码包服务的自启动  vi /etc/rc.d/rc/local   加入/usr/local/apache2/bin/apachectl start 
+			让源码包的服务被服务管理命令识别 (让源码包的Apache服务能被service命令管理启动)
+				ln -s //usr/local/apache2/bin/apachectl   /etc/init.d/apache    软链接 
+			
+			让源码包的Apache 服务能够被chkconfig与ntsysv命令管理自启动
+				vi /etc/init.d/apache
+				# chkconfig: 35 86 76
+				#指定httpd脚本可以被chkconfig命令管理,格式是 chkconfig: 运行级别 启动顺序 关闭顺序
+				# description: source package Apache
+				#说明,内容随意
+				
+				执行 chkconfig --add apache   把源码包apache 加入chkconfig命令
+			
+	服务管理总结
+				xwind 做脑图
+				文件包含:
+				Linux服务治理.png
+				Linux服务列表.pdf
 
 
-Linux网络管理
+Linux网络管理  2019年1月2日16:20:46
+	网络基础
+		ISO/OSI七层模型简介
+			ISO 国际标准化组织  OSI 开放系统互联模型  IOS 苹果操作系统
+			网络中IOS指的是 思科公司为其网络设备开发的操作系统
+			
+			层			数据单位				作用
+			应用层  	APDU					用户接口
+			表示层  	PPDU					数据的表现形式、特定功能实现 如 加密
+			会话层  	SPDU					对应用会话的管理、同步
+			传输层  	TPDU(传输协议数据单元)	传输前 错误检测、流控 可靠与不可靠的传输	
+			网络层  	报文					提供逻辑地址、选路
+			数据链路层  帧						成帧、用MAC地址访问媒介、错误检测与修正
+			物理层		比特					设备之间的比特流的传输、物理接口、电器特性
+																		
+																
+			MAC地址负责局域网通信 IP地址负责外网通信
+			
+		TCP/IP四层模型
+			应用层		对应OSI参考模型的高层,为用户提供各种所需的服务 FTP Telnet DNS SMTP
+			传输层		对应OSI参考模型的传输层,为应用层实体提供端到端的通信功能,保证数据包的顺序传送及数据的完整性
+						两个主要协议: 传输控制协议(TCP) 和用户数据报协议(UDP)
+			网络互联层	对应OSI参考模型的网路层,主要解决主机到主机的通信问题,所包含的协议涉及数据包在整个网络上的逻辑传输
+						主要三个协议: 网际协议IP  互联网组管理协议 IGMP 和互联网控制报文协议 ICMP
+			网络接口层  对应OSI参考模型的物理层和数据链路层,负责监事数据在主机和网络之间的交换
+						TCP/IP本身并未定义该层的协议,参与互联的各网络使用资金的物理层和数据链路层协议,
+						然后与TCP/IP的网络接入层进行连接 地址解析协议(ARP)在此层
+				两种模型比较
+					共同点: 都采用层次结构的概念  都能提供面向连接和无连接两种通信服务机制
+					不同点: 7 4   对TCP/IP可靠性要求更高  OSI模型是在协议开发前设计的具有通用性,TCP/IP先有协议后有模型,不适用非TCP/IP
+							OSI模型只是理论模型,没有成熟产品,TCP/IP已经是国际标准
+		
+		IP地址详解
+			IP包头
+				IPV4协议：
+					每一行32位,一共20字节  ，因为字节数不固定,所有每次接受到都需要先判断字节数,效率低，才会有固定包头长度IPv6协议
+					版本位 4位 头部长度4 优先级和服务类型8位 总长度16
+					标识16	标志3位 片偏移13位
+					生存时间8位  协议8位 头部校验和16位
+					源IP地址32位
+					目的IP地址32位
+					选项如果有 
+					数据
+					
+			IP地址分类
+				网络类别  最大网路数    IP地址范围						最大主机数			私有IP地址范围
+				A 			126 =2^7-2  1.0.0.1--126.255.255.255		2^24-2				10.0.0.0--10.255.255.255
+				B 			16384=2^14	128.0.0.0--191.255.255.255		2^16-2				172.16.0.0--172.31.255.255
+				C 			2097152=2^21   192.0.0.0--223.255.255.255	2^8-2				192.168.0.0--192.168.255.255
+				说明:
+				1.0.0.1		-代表当前网络的本身,不能分配		126.255.255.255		- 代表当前网络的广播地址
+				A  1.0.0.1 中 第一位代表网段  后面三位代表同一网段中的不同主机  ,它们之间通信不需要通过路由器,使用交换机就可以
+				B  128.0.0.0 中前两位数代表同一个网段,后面两位代表不同主机
+				C  192.0.0.0 中前三位数表示同一网段,后一位数代表不同主机
+				私有IP免费,公网IP收费,私有IP不能直接和外网通信,需要和公网转换才能通信
+				
+		子网掩码
+			标准子网掩码  255.0.0.0  255.255.0.0  255.255.255.0
+			必须和IP地址一起查看,作用是确定 哪一位数变化代表 同一网段 255 哪一位变化代表不同的主机0
+			变长子网掩码  IP地址172.16.2.121  子网掩码 255.255.255.0
+			
+		端口作用
+			TCP协议包头  
+				每一行32位,20字节
+				源端口 16 目的端口16
+				序列号32位
+				确认号32位
+				数据偏移4 保留6 标志6(URG ACK PSH RST SYN FIN) 窗口16
+				校验和16 紧急指针16
+				选项
+				数据
+			
+			UDP协议包头   消耗资源更少,速度更快
+			源端口16 目的端口16
+			长度16  校验和16
+			数据
+			
+			常见端口号
+				FTP    文件传输协议       20 数据传输 21 登录认证,发送传输命令
+				SSH   安全shell协议			22
+				telnet 远程登录协议			23   不安全,数据没有加密,禁止开启
+				DNS   域名系统				53
+				http  超文本传输协议		80
+				SMTP 简单邮件传输协议		25  发信
+				POP3 邮局协议3代			110  收信
+				
+			查看本机启用的端口
+				netstat -an  		-a  查看所有连接和监听端口  -n 显示IP地址和端口号,不显示域名和服务名
+			
+		DNS作用  Domain Name System  名称解析
+			IP进行通信,IP用数字表示不便于记忆,域名更好记
+			把域名和IP进行操作相互转换
+			DNS出现之前使用hosts文件 地址:C:\Windows\System32\drivers\etc\hosts 127.0.0.1 localhost
+			hosts 做静态IP 和域名对应 优先级高于DNS解析  效能低下 主机维护困难
+			DNS优点: 层次性 分布式
+			DNS服务作用
+				将域名解析为IP地址  客户机向DNS服务器发送域名查询请求,DNS服务器告知客户机Web服务器的IP地址,客户机与Web服务器通信
+				
+			域名空中结构
+					根域							.
+					顶级域(组织 国家)		edu  gov 		com 		org mil  cn 	
+					二级域							IBM  Microsoft  immortal	
+					主机名								www   NEWS
+					. 分隔  便于分级管理
+			DNS 查询类型
+				查询方式	递归查询 一般客户机和服务器之间属于递归查询,若DNS不能解析,会向另外DNS服务发送查询请求
+							迭代查询  服务器收到一次迭代查询回复一次,结果不一定指向目标IP与域名的映射关系 ,也可以是其它DNS服务器
+				查询内容  正向查询由域名查IP 		反向IP地址查域名
+					
+			
+		网管作用
+				又称网间连接器 协议转换器 在网络层以上实现网络互连是最复杂的网络互联设备,仅仅用于两个高层协议不同的网络互连
+				即可广域网也可局域网 是一种充当转换重任的服务器或路由器
+	Linux网络配置
+		IP地址配置
+			ifconfig命令临时配置IP地址
+				ifconfig 查看配置网络状态 
+				ifconfig eth0 192.168.0.200 netmask 255.255.255.0  临时设置eth0网卡的IP地址与子网掩码
+			setup工具永久配置ip地址
+				红帽专属工具
+			修改网络配置文件图形界面配置IP地址
+		使用文件配置IP地址
+			网卡信息文件  vi /etc/sysconfig/network-scripts/ifcfg-eth0
+			TYPE=Ethernet						类型以太网
+			PROXY_METHOD=none
+			BROWSER_ONLY=no
+			BOOTPROTO=dhcp					是否自动获取IP(dhcp nene static)
+			DEFROUTE=yes
+			IPV4_FAILURE_FATAL=no
+			IPV6INIT=yes		I						Pv6启用
+			IPV6_AUTOCONF=yes
+			IPV6_DEFROUTE=yes
+			IPV6_FAILURE_FATAL=no
+			IPV6_ADDR_GEN_MODE=stable-privacy
+			NAME=ens33
+			UUID=93a6d333-368e-4183-b39f-acbfcc98671c   唯一识别码
+			DEVICE=ens33								网卡设备名	
+			ONBOOT=yes									是否随网络服务启动
+			主机名文件
+		
+		虚拟机网络配置  vi /etc/sysconfig/network 
+			NETWORKING=yes
+			HOSTNAME=localhost.localdomain
+			
+			hostname [主机名]  查看 与临时设置主机名命令
+		
+		DNS配置文件  vi /etc/resolv.conf
+		nameserver 202.106.0.20
+		search localhost 
+		
+		虚拟机网络配置步骤
+			①配置LinuxIP地址 		setup  修改并配置IP地址
+			②启动网卡vi /etc/sysconfig/network-scripts/ifcfg-eth0,把ONBOOT=no 改为yes. 
+				service network restart  重启网络服务
+			③ 修改UUID(复制的镜像或者虚拟机)
+				vi /etc/sysconfig/network-scripts/ifcfg-eth0 删除MAC地址行
+				rm -rf /etc/udev/rules.d/70-persistent-net.rules 删除网卡和MAC地址的绑定文件
+				重启系统
+			④	  设置虚拟机网络连接方式
+			⑤		修改桥接网卡	
+		
+	Linux网络命令 
+		Linux网络命令之网络环境查看命令
+				ifconfig  查看临时配置网络
+				ifdown 网卡设备名  禁用该网卡
+				ifup  网卡设备名   启动该网卡
+				netstat 选项  查询网络状态
+					-t列出TCP协议端口   -u 列出UDP协议端口  -n 使用IP地址和端口号 
+					-l 列出在监听状态的网络服务 -a 列出所有的网络连接 -r  网关
+				nslookup [主机名或IP]  进行域名与IP地址解析	
+					
+		Linux网络命令之网络测试命令
+			ping [选项] ip 或域名    探测制导IP或域名的网络状况  -c 次数 指定ping包的次数
+			telnet [域名或IP] [端口]				远程管理与端口探测命令 telnet 192.168.0.254 80
+			traceroute [选项]  IP或域名  路由跟踪命令 -n 使用IP,不使用域名,速度更快 
+			wget命令   下载命令   wget http://soft/vpser.net/lnmp1.1.full.tar.gz 
+			tcpdump  -i eth0 -nnX port 21   抓包
+				选项 -i 指定网卡接口  -nn将数据包中的域名与服务转为IP和端口  -X以十六进制和ASCII码显示数据包内容  port  指定监听的端口
+			
+	
+	远程登录工具
+		SSH协议原理   安全外壳协议
+			对称加密算法 同一个密钥可以同时用作信息加密和解密
+			非对称加密算法  公钥publickey 私钥privatekey
+			SSH命令
+			ssh 用户名@ip  								远程管理指定Linux服务器
+			scp [-r] 用户名@ip:文件路径 本地路径     	下载文件
+			scp  [-r] 本地文件 用户名@ip:上传路径		上传文件
+			
+		Linux远程登录工具SecureCRT
+			收费的,但是有破解版,不推荐使用
+		XShell和WinSCP文件传输 工具
+			WinSCP 文件协议默认选择SFTP
 
+Linux权限管理之基本权限  2019年1月2日10:23:56
+	文件基本权限
+		- rw-  	  r--     r--     第一位-  文件类型( - 文件 	d 目录  	| 软链接)
+		u所有者 g所属组 o其他人
+		chmod [选项] 模式 文件名 		 
+				选项:	-R 递归
+				模式:	[ugoa][+-=] [rwx]
+						[mode=421]
+					chmod u+x cls.av      给cls.av所有者添加执行权限
+					chmod g+w,o+w cls.av	给所属组和其他人添加写的权限
+					chmod a=rwx fj.av 	   给所有人赋予读写执行
+				权限的数字表示
+								r   --  4 	 w   --   2  	x -- 1 
+					rwx r-x r-x 
+					 7  5   5
+		权限对文件的作用
+			r:	读取文件的内容  cat more head tail
+			w:	编辑、新增、修改文件的内容  vi echo ,但是不包含删除文件
+			x:	可执行 
+		权限对于目录的作用
+			r:	可以查看目录下文件名 ls
+			w；	具有修改目录结构的权限,如新建文件和目录,删除此目录下文件和目录,重命名此目录下文件和目录,剪切(touch rm mv cp )
+			x:	可以进入目录 cd 
+			
+			对文件来讲,最高权限是 x执行权限.	对目录来讲,最高权限是w 写 
+			对目录来讲权限只有 0 5 rx   7 rwx ,而4 1 6等是没有意义
+			
+			chown 用户名 文件名 修改文件的所有者
+			
+			分配文件权限的时,核心原则是:在最小权限下实现要求即可
+			
+	文件默认权限
+			umask 	查看默认权限
+				0022 第一个0,文件特殊权限  022 文件默认权限 
+			文件默认不能建立为执行文件,只能手工赋予执行权限
+			 文件默认最大权限666,默认权限需要换算成字母再相减,建立文件之后的默认权限,为666减去umask值644
+			 目录默认最大权限777,默认权限需要换算成字母再相减,建立文件之后的默认权限,为777减去umask值755
+			umask 0022		   临时修改
+			vi /etc/profile   永久修改
+	uid是用户编码，系统用户的编用户码为1到499，人为添加的用户编码为500开始
 
-Linux权限管理之特殊权限
+Linux权限管理之特殊权限  2019年1月1日21:06:53
 
+	ACL权限
+		ACL权限简介与开启
+		系统文件的权限有三个身份(所有者 所属组 其他人),当有第三个身份的人权限不足时，没有办法访问
+		查询分区ACL权限是否开启
+			dumpe2fs -h /dev/sda5  dumpe2fs命令是查询指定分区详细文件系统信息的命令    -h 仅显示超级块中信息,而不是显示磁盘块组的详细信息
+			临时开启分区ACL权限  mount -o remount , acl /   重新挂载根分区并加入ACL权限
+			永久开启分区ACL权限  vi /etc/fstab
+									UUID = c2ca6f57-b15c-43ea-bca0-f239083d8bd2 / ext4  dafaults , acl  1  1
+								 mount -o remount  / 	  重新挂载文件系统或者重启系统使修改生效
+			
+		ACL权限查看与设定
+			查看ACL命令          getfacl 文件名
+			设定ACL权限命令      setfacl 选项 文件名  
+						选项:  -m 设定ACL权限 -x 删除指定ACL权限 -b 删除所有ACL权限 -d设定默认ACL权限 
+						-k 删除默认ACL权限  -R 递归设定ACL权限
+				home文件目录下操作:
+				useradd tony
+				groupadd stu
+				mkdir /av
+				chown tony:stu /av
+				chmod 770 /av
+				useradd lw
+				serfacl -m u:lw:rx /av   给用户赋予r-x 权限,使用"u:用户名:权限"格式 
+				setfacl -m g:goup2:rwx  /av  给组分配ACL权限  g:组名:权限 格式 
+			 
+		ACL最大权限与删除
+				最大有效权限mask 
+					mask用来指定最大有效权限,例如我给用户赋予ACL权限,是需要和mask的权限"相遇" 才能得到用户的真正权限
+				setfacl -m m:rx 文件名  设定mask权限为r-w , 使用"m:权限" 格式	
+				
+				setfacl -x u:用户名 文件名  删除指定用户的ACL权限
+				setfacl -x g:组名 文件名  删除指定用户组的ACL权限
+				setfacl -b  文件名  删除文件的所有的ACL权限
+				
+		ACL默认权限与递归权限
+			递归ACL权限   仅能赋予目录,不能赋予文件
+				递归是父目录在设定ACL权限时,所有的子文件和子目录也会拥有相同的ACL权限
+				setfacl -m u:用户名:权限  -R 目录名           -R 递归 
+				建议: 递归ACL权限会产生权限溢出,尽量使用常规的所有者,所属组,其他人,少用ACL递归权限
+			默认ACL权限
+				默认ACL权限的作用是如果给父目录设定了默认ACL权限,那么父目录中所有新建的子文件都会继承父目录的ACL权限
+				setfacl -m d:u:用户名:权限 目录名			d 默认default
+			两者区别:递归是对当前目录下已经存在的文件  默认是对以后新建的文件	
+		
+	sudo权限
+			root把本来只能超级用户执行的命令赋予普通用户执行  
+			sudo的操作对象是系统命令
+			
+			visudo  实际修改的死/etc/sudoers文件
+			root 	ALL 		= 		(ALL)  					ALL 
+			用户名  被管理主机地址    (可使用的身份) 授权命令  (绝对路径)
+			# %wheel	 ALL 	 =  	(ALL)  			 ALL
+			%组名	被管理主机地址	  (可使用的身份) 授权命令	(绝对路径)
+			user1  ALL = /sbin/shutdown -r now  授权普通用户重启命令  
+			普通用户执行sudo赋予的命令
+			su - user1 
+			sudo -l   查看可用的sudo命令
+			user1用户也只能执行 sudo /sbin/shutdown -r now ,不能执行关机命令
+			
+			user1 ALL =/usr/sbin/useradd				赋予user1添加用户权限
+			user1 ALL =/usr/bin/passwd [A-Za-z]*, !/usr/bin/passwd "", !/usr/bin/passwd root  赋予用户user1给其它用户添加密码权限,不允许修改root用户密码
+			不允许给普通用户赋予 /sbin/vi 权限,使用sudo赋予权限一定小心 
+			
+	文件特殊权限
+		SetUID  不安全 
+			只有可执行的二进制程序才能设定SUID权限
+			命令执行者要对程序拥有x执行权限
+			命令执行者在执行程序时获得该程序文件属主的身份(临时获得属主权限)
+			SetUID权限只在该程序执行过程中有效,执行过程中临时有效,执行结束自动失效
+			
+			ll /usr/bin/passwd   		passwd命令拥有SetUID权限,所有普通用户可以修改自己的密码
+			#		-resr-xr-x.  root root 25980 2月 22 2018 /usr/bin/passwd
+			ll /bin/cat					cat命令没有SetUID权限,所有普通用户不能查看/etc/shadow 文件内容
+			#		-rwxr-xr-x.  root root 47976 2月 22 2018 /usr/bin/passwd
+			
+			设定SetUID方法        
+			chmod 4755 文件名    4代表 SUID
+			chmod u+s 文件名
+			
+			取消SetUID方法
+			chmod 0755 文件名
+			chmod u-s 文件名
+			
+			注意SetUID:
+			关键目录应严格控制写权限  比如 "/"、"/usr" 等
+			用户的密码设置应严格遵守密码三原则
+			对系统中默认应该具有SetUID权限的文件做一列表,定时检查有没有在这之外的文件被设置了SetUID权限
+			
+			vi suid_check.sh       一般执行之前,删掉中文注释,否则有可能报错
+			
+			#!/bin/bash
+			
+			find  / -perm -4000  -o  -perm -2000  > /tmp/seruit.check
+			#搜索系统中所有拥有SUID和SGID的文件,并保存到临时目录
+			for i in $(cat /tmp/setuid.check)
+			#做循环,每次循环取出临时文件中的文件名
+			do
+				grep $i /root/suid.log  > /dev/null
+				#比对这个文件名是否在模板文件中
+					if[ "$?" != "0"]
+					#检查上一个命令的返回值,如果不为0,证明上一个命令报错
+					then
+							echo "$i isn't in listfile!" >>  /root/suid_log_$(dae + %F)
+						#如果文件名不再模板文件中,则输出错误信息,并把报错保存到日志中
+					fi
+			done
+			rm -rf /tmp/setuid.check 
+			#删除临时文件
+						
+						
+		SetGID  不安全 
+			SetGID对文件的作用
+				只有可执行的二进制程序才能设定SGID权限
+				命令执行者要对程序拥有x执行权限
+				命令执行者在执行程序时获得该程序文件属组的身份 
+				SetGID权限只在该程序执行过程中有效
+			
+				/usr/bin/locate 是可执行二进制程序,可以赋予SGID
+				执行用户lamp对/usr/bin/locate命令拥有执行权限
+				执行/usr/bin/locate命令时,组身份会升级为slocate组,而slocate组对/var/lib/mlocate/mlocate.db数据库
+				拥有r权限,所有普通用户可是使用locate命令查询mlocate.db 数据库
+				命令结束,lamp用户的组身份返回为lamp组
+			SetGID对目录作用
+				普通用户必须对此目录拥有r和x权限,才能进入此目录
+				普通用户在此目录中的有效组会变成此目录的属组
+				若普通用户对此目录拥有w权限时,新建的文件的默认属组是这个目录的属组
+			设定SetGID
+				chmod 2755 文件名
+				chmod g+s 文件名
+			取消SetGID
+				chmod 0755 文件名
+				chmod g-s 文件名
+			
+		Sticky BIT  安全
+			SBIT粘着位作用
+				粘着位目前只对目录有效
+				普通用户对该目录拥有w和x权限,即普通用户在此目录拥有写入权限
+				如果没有粘着位,因为普通用户拥有w权限,可以删除此目录下的所有文件,包括其他用户建立的文件.
+				一旦赋予了粘着位,除了root可以删除所有文件,普通用户就算拥有w权限,也只能删除自己建立的文件,不能删除其它用户建立的文件
+			设置粘着位
+				chmod 1755 目录名
+				chmod o+t  目录名
+			取消粘着位
+				chmod 0777  目录名
+				chmod o-t 目录名
+			
+	不可改变位权限
+			chattr权限
+			chattr [+-=] [选项] 文件或目录名 
+				选项: + 增加权限	- 删除权限		= 等于某权限
+				i insert 插入  	对文件设置i属性,不允许对文件进行删除、改名,也不能添加和修改数据
+								对目录设置i属性,只能修改目录下文件的数据,不允许建立和删除文件
+				a  append 追加  对文件设置a属性,只能在文件中增加数据,不能删除、修改数据
+								对目录设置a属性,只允许在目录中建立和修改文件,不能删除文件
+								
+			lsattr  选项  文件名  查看文件系统属性
+				选项: -a  显示所有文件和目录
+					  -d  若目标是目录,仅列出目录本身的属性,而不是子文件的属性
 
-
-
-
-
-
+		pam  和 selinux 大部分情况不需要知道
 
 
 

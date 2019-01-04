@@ -7,6 +7,7 @@
 	查看/etc/sysconfig/network-scripts下，将其余无关的网卡位置文件全删掉，避免不必要的影响，即只留一个以ifcfg开头的文件，
 	查看下你电脑有没有禁用了VMware DHCP service和VMware NAT service 这几个vm服务，如果禁用则开启
 	在VMWare的编辑-虚拟网络编辑器中将网络模式改为桥接
-	
+3.复制出来的虚拟机 ,在局域网出现无法上网问题
+		查看网卡配置文件ifcfg-eth0 , UUID是否修改
 	
 	嫂子我哥呢 姐夫别这样 来吧小姨子
