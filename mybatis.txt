@@ -1,0 +1,393 @@
+Mybatis
+	Mybatis历史
+	ibatis  = internet  + abatis     的组合  abatis  铁丝网, 做软件 加密的 ,转到基于Java的持久层框架。 从Google code 到 GitHub
+	
+	特点:
+		1.开源的优秀持久层框架  比较轻量级 
+		2.SQL语句和Java代码分离
+		3.是一种面向配置的编程思想
+		4.良好的支持复杂数据映射
+		5.动态SQL (替换SQL拼接不安全)
+		
+	Mybatis环境搭建
+		下载
+			https://github.com/mybatis/mybatis-3/releases   下载.xip包
+		包 导入工程
+			导入mybatis-3.4.6.jar
+			导入lib文件夹中的jar
+			导入mysql-connector-java-3.0.17-ga-bin.jar
+			新建Java项目-- 右键Build Path-- Configure Build Path  --Java Build Path -- Library -- Add Extormal JAR Soloction
+		日志配置
+			Hibernate 中有SQL 输出 ,Mybatis中通过日志输出 SQL ,方便我们 调试代码 
+			加入log4j.properties文件 , 改写日志输出级别 DEBUG 
+			
+			log4j.rootLogger=DEBUG,Console
+			#Console
+			log4j.appender.Console=org.apache.log4j.ConsoleAppender
+			log4j.appender.Console.layout=org.apache.log4j.PatternLayout
+			log4j.appender.Console.layout.ConversionPattern=%d [&t] % -5p [%c] - %m%n
+			
+			log4j.logger.java.sql.ResultSet=INFO
+			log4j.logger.org.apache=INFO
+			log4j.logger.java.sql.Connection=DEBUG
+			log4j.logger.java.sql.Statement=DEBUG 
+			log4j.logger.java.sql.PreparedStatement=DEBUG
+			
+	Mybatis 工作流程
+		概述
+			读取基本配置文件 -- 生成SqlSessionFactory -- 建立 SqlSession  -- 调用Mybatis的API   查询Map 配置 -- 返回查询结果 --  关闭SqlSession
+		配置文件
+			<environments default="development">
+				<environment id ="development" >
+					<transactionManager type="JDBC" />
+					<dataSource type="POOLED" >
+						<property name="driver" value="${jdbc.driverClassName}" />
+						<property name="url" value="${jdbc.url}" />
+						<property name="username" value="${username}" />
+						<property name="password" value="${password}" />
+					</ dataSource >
+				< / environment>
+			< / environments>
+			
+			<!--  map 文件引用 1.相对路径引用  2.绝对引用  3.包路径引用 -->
+			<mappers>
+				<mapper resource="map/JiKeUserMap.xml" />
+				<mapper resource="map/JiKeVisitMap.xml" />  
+				<mapper url="file:///var/sqlmaps/JiKeVisitMap.xml" />
+				<mapper name="com.tiantian.mybatis.mapperinterface" />
+			</ mappers>	
+			
+		SqlSessionFactory SqlSession
+		建立SqlSessionFactory
+			SqlSessionFactory sqlMapper = new  SqlSessionFactoryBuilder().build(reader);  //输入流 reader
+			SqlSession session = sqlMapper.openSession();
+		
+			
+	
+	
+	Mybatis增删改查
+		查询
+			select 属性
+		id				命名空间唯一标识符
+		parameterType	将会传入语句的参数类的 完全限定名 或别名
+		parameterMap	废弃,使用内联参数映射和parameterType
+		resultType		返回期望类型的 类的 完全限定名 或别名 ,不能和resultMap同时使用  
+		resultMap		命名引用外部的resultMap 
+		flushCache		当为true时,清空缓存,默认false不清空
+		useCache		默认true,本条语句的返回结果被缓存
+		timeout			设置等待数据库返回结果的最大 时长 默认不设置
+		fetchSize		暗示驱动程序每次批量返回的结果行数,默认不设置
+		statementType	默认不设置
+		resultSetType	默认不设置
+		
+		parameterType封装 ① hashmap  登录验证的SQL 查询  ② 对象 自动参数匹配属性 别名
+		<select id="loginSelect" resultType="User" parameterType="hashmap"  >
+			select * from User where userName=#{userName} and password=#{password}
+		</select>
+		测试:
+		HashMap<String , String> hm = new HashMap();
+		hm.put("userName","jike001");
+		hm.put("password","123456");
+		User oneTmp = session.selectOne("loginSelect",hm);  //loginSelect 就是ID 值
+		
+			返回多选记录时Mybatis自动封装成List
+				<select id="selectUserList" resultType="jkUser" parameterType="jkUser"  >
+					select * from jkUser 
+				</select>
+			测试: 
+				List<jkUser> ap=session.selectList("selectUserList");
+				for(jkUser temp:ap ){
+					System.out.println("用户名:"+temp.getUserName());
+				}
+				
+			resultMap 能够解决复杂查询时的映射问题		 当列名和对象的属性名不一致的时候 使用别名
+				<resultMap id="selectUserMap" Type="jkUser" >
+					 <id property="id" column="id"/>
+					 <result  property="userName" column="userName"/>
+					 <result  property="password" column="password"/>
+				</resultMap>
+				使用resultMap:
+				<select id="selectUsers" resultMap="selectUserMap">
+					select id , userName , password from jkUser
+				</select>
+				
+		插入 insert
+			<!-- keyProperty 哪一列作为主键	useGeneratedKeys 是否开启数据库中主键自增-->
+		<insert id="insertUser" parameterType="jkUser" statementType="PERPARED" keyProperty="id" useGeneratedKeys="true" >
+			insert into jkUser (userName,password) values (#{userName,jdbcType=VARCHAR},#{password,jdbcType=VARCHAR})
+		</insert>
+		
+		更新 update
+		<update id="updateUser" parameterType="jkUser" >
+			update jkUser SET userName= #{userName,jdbcType=VARCHAR},#{password,jdbcType=VARCHAR})  where id = ${id,jdbcType=INTEGE}
+		</update>
+		
+		删除 delete   注解方式有局限性 ,推荐采用 xml 方式
+			public interfacejkUserMap{
+				@Delete("delete from jkUser where id = #{id}")
+					public void deleteUser(Integer id );
+					}
+				
+				<mapper class="jk.map.Interface.interfacejkUserMap" />
+			测试：
+				InterfacejkUserMap ijum = session.getMapper(InterfacejkUserMap.class);
+				ijum.deleteUser(id);
+				session.commit();
+				
+				
+	事务处理
+		事务有两种方式控制 
+			JDBC
+				<environment id="development">
+					<transactionManager type="JDBC" />
+			MANAGED(第三方插件如 Spring)
+		
+		事务处理方法
+			try{
+				session=sqlMapper.openSession(false);  // 关闭自动提交
+						...
+				session.commit();                      // 提交事务		
+			}catch(Exception e ){
+					session.rollback();                // 回滚事务
+			}finally{
+				session.close();					   // 关闭session
+			}
+		自动ID返回
+		
+	关联查询
+			数据库表
+				author		   authorid , userID , realName  , IDCard
+				jkuser		   id , userName , password
+				reader		   readerID , userID , money 
+				visit		   visitID , userID , visitDate , visitIP
+				  
+
+		联合查询
+				//查询所有作者的登录名
+				select * from author inner join jkuser on jkuser.id = author.userID
+				
+				<resultMap id="jkAuthorMap" type="Author" >
+					<id =property="authorID" column="authorid" />
+					<result property="realName" column="realName" />
+					<result property="IDCard" column="IDCard" />
+					<association property="jkuser" column="userID" javaType="jkUser">
+						<id property="id" column="id" />
+						<result property="userName" column="userName" />
+						<result property="password" column="password" />
+					</association>
+				</resultMap>
+					id  			一个ID结果, 标记结果作为ID 可帮助提供整体查询效能
+					result			注入到字段或JavaBean属性的普通结果
+					association		复杂类型的关联
+					collection		复杂类型的结合
+					constructor		类在实例化时,用来注入结果到构造方法
+					discriminator 	使用结果值 来 决定使用哪个结果映射
+				
+				<select id="selectAuthorJoin" resultMap="jkAuthorMap" >
+					select * from author inner join jkUser on jkuser.id = author.userID
+				</select>
+				
+		构造查询
+			public JkUser ( String userName , String password){
+					super();
+					this.userName= userName;
+					this.password = password;
+				}
+			<resultMap id="jkAuthorMap" type="Author" >
+					<id =property="authorID" column="authorid" />
+					<result property="realName" column="realName" />
+					<result property="IDCard" column="IDCard" />
+					<association property="jkuser" column="userID" javaType="jkUser">
+						<constructor>
+							<arg column="userName" javaType="String" />
+							<arg column="password" javaType="String" />
+						</constructor>	
+					</association>
+			</resultMap>
+				
+				
+		子查询
+			select * from author where where userID in(select * from jkuser);
+			① 先建立一个子查询
+				<select id="selectOneUser" parameterType="int" resultMap="jkUser" >
+					select * from jsUser where id =#{id}
+				</select>
+			② 建立查询
+				<select id="selectAuthorSub" resultMap="jkAuthorSubMap" >
+					select * from author  
+				</select>
+			③ 子查询的resultMap
+			<resultMap id="jkAuthorSubMap" type="Author" >
+					<id =property="authorID" column="authorid" />
+					<result property="realName" column="realName" />
+					<result property="IDCard" column="IDCard" />
+					<association property="jkuser" column="userID" javaType="jkUser" select="selectOneUser">	 
+					</association>
+			</resultMap>
+			
+		子查询和联合查询的区别
+			联合查询:	一次查询, 占用资源大
+			子查询:		N+1 次查询,占用资源可大可小
+			懒加载 + 子查询     查询速度更高更快
+		懒加载   加载在别名之前 Alias
+			<settings>
+				<setting name="lazyLoadingEnabled" value="true" />
+				<setting name="aggressiveLazyLoading" value="false" />
+			</settings>	
+			
+		集合查询
+				数据库增加 visit 表
+				查询用户的登录记录
+				select * from jkuser inner join visit on  jkuser.id = visit.userID 或者
+				select * from jkuser where id in( select userID from visit)
+				修改jkUser类 添加private List<Visit> visitList;
+				
+			collection 标记   resultMap property column  ofType 属性
+			
+			<resultMap id="visitMap" type="jkUser" >
+					 <id property="id" column="id"/>
+					 <result  property="userName" column="userName"/>
+					<collection property="visitList" column="visitID" javaType="ArrayList" ofType="Visit">	 
+						<result property="visitID" column="visitID" />
+						<result property="visitDate" column="visitDate" />
+						<result property="visitIP" column="visitIP" />
+					</collection>
+			</resultMap>
+			
+			建立select
+				<select id="selectVisit" resultMap="visitMap" >
+					select * from jsUser inner join visit on   jkuser.id =visit.userID
+				</select>
+			测试:
+				List<jkUser> ap=session.selectList("selectUserList");
+				for(jkUser temp:ap ){
+					for(Visit oneVisit:temp.getVisitList){
+					System.out.println("用户名:"+temp.getUserName());
+					}
+				}
+				
+			
+动态SQL
+		<if> 标签
+			<select id="selectReaderMoney" resultType="jkReader"  parameterType="jkReader">
+				where 1=1 
+				<if test="money!=null" >       // money表示reader对象的属性
+					and money>#{money}			// 前面money表示数据库中的字段,后面的money 代表参数对象的属性 
+				</if>
+			</select>	
+				测试:
+				jkReader oneReader = new jkReader();
+				oneReader.setMoney(200);  //去除此行 代表查询全部
+				List<jkReader> ap =session.selectList("selectReaderMoney",oneReader);
+				
+		<choose>
+			① 建立select 判断用户名,如果不存在就判断id , 最后判断密码是否为空
+				select * from jkuser where 1=1
+				<choose>
+					<when test="userName!=null" >
+						and userName like #{userName}
+					</when>
+					<when test="id!=0" >
+						and id like #{id}
+					</when>
+					<otherwise>
+						and password is not null
+					</otherwise>
+				</choose>
+			测试:
+				jkUser oneUser = new jkUser();
+				oneUser.setUserName("%j%");
+				oneUser.setId(5);
+				List<jkUser> ap = session.selectList("selectjkUserChoose",oneUser);
+				
+		<where>  智能化的添加删减逻辑运算符
+				select * from jkuser 
+				<where>
+					<if test="userName!=null" >
+						userName like #{userName}
+					</if>
+					<if test="id!=null" >
+						and id = #{id}
+					</if>
+				</where>	
+					
+		<set>  智能赋值    ,  
+			update jkUser
+			<set>
+				<if test="userName!=null" >
+					userName = #{userName} ,
+				</if>
+				<if test="password!=null" >
+					and password like #{password},
+				</if>
+			</set>
+				where id =#{id}
+				
+		<trim>  更加智能化标记    格式化标记 可以与其它标记组合使用,完成where和set的功能
+			prefix 前缀增加 suffix 后缀增加  prefixOverrides 自动判断前置  suffixOverrides 自动判断后置
+
+				代替set 标签
+				update jkUser
+				<trim prefix="SET" suffix="WHERE id =#{}" suffixOverrides="," >
+					<if test="userName!=null and userName != '' " >
+						userName = #{userName} ,
+					</if>
+					<if test="password!=null and password != '' " >
+						and password like #{password},
+					</if>
+				</trim>
+				
+				代替where
+				select * from jkuser 
+				<trim prefix="where" prefixOverrides="and|or">
+					<if test="userName!=null" >
+						userName like #{userName}
+					</if>
+					<if test="id!=null" >
+						and id = #{id}
+					</if>
+				</trim>	
+				
+		<foreach>  循环查询 
+			<foreach item="item" index="index" collection="list" open="(" separator="," close=")" >
+				#{item}
+			</foreach>
+				item  			每一次迭代结果
+				collection 		循环集合或指定类型
+				separator		元素之间的分隔符 , 可选
+				open 			开始符合   ,可选
+				close			结束符合   ,可选
+				index			list和数组的序号 , 可选
+
+					
+			① 建立Select 从指定id集合查询出会员
+				select * from jkuser
+					<where >
+						id in
+						<foreach item="item" index="index" collection="list" open="(" separator="," close=")" >
+							#{item}
+						</foreach>
+					</where>
+			② 测试:
+				ArrayList<Integer> ides = new ArrayList();
+				ides.add(2);
+				...
+				List<jkUser> ap= session.selectList("selectjkUserForeach",ides);
+			 
+		循环赋值  key  循环迭代的序号
+			①insert 中的foreach ,使用集合一次增加多个用户   
+				insert into jkUser (userName , password ) values
+				<foreach item="item" index="key" collection="list" open=" " separator="," close=" " >
+						(	#{item.userName} , #{item.password})
+				</foreach>
+			
+			②测试：
+				ArrayList<jkUser> jkUserList = new ArrayList();
+				jkUser one = new jkUser("jt1","666");
+				jkUser two = new jkUser("jt2","888");
+				jkUserList.add(one);
+				jkUserList.add(two);
+				session.insert("insertjkUserList",jkUserList);
+				session.commit();
+					
+					

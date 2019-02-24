@@ -1,0 +1,199 @@
+多线程
+	进程: 程序任务的执行过程 持有资源(内存和共享文件)和线程
+	线程: 系统中最小的执行单元,同一个进程中有多个线程 互斥 同步
+
+	Java对线程的支持 
+	体现在 class Thread   和 interface Runnable  java.lang包 Run方法
+
+	Thread常用方法
+	
+		创建线程	Thread()  Thread(String name)  Thread(Runnable target)  Thread(Runnable target , String name) 
+		
+		线程方法	void start() 启动线程
+					static void sleep(long millis) 	static void sleep(long millis,int nanos) 线程休眠
+					void join() void join(long millis)   void join(long millis,int nanos)  使其他线程等待当前线程终止
+					static void yield()  当前运行线程释放处理器资源
+		获取线程引用  static Thread currentThread()  返回当前运行的线程引用
+
+			volatile 保证线程可以正确读取其它线程写入的值
+			可见性 refJMM  happens-before原则
+		
+		stop 已经过期
+		interrupt方法可以使中断状态发生改变,不能停止线程
+		正确退出方法是  设置退出条件  设置 线程是否被中断的状态 
+
+		争用条件 Race Condition
+		当多个线程同时共享访问同一块数据时,每个线程都尝试操作该数据,从而导致数据被破坏,这种现象称为 争用条件
+
+		互斥的实现: synchronized (intrinsic lock) 
+		
+		同步的实现: wait() / notify() / notifyAll()  都是Java中的Object对象,非 Thread
+						不是在同一个线程的同一次操作中 执行的
+
+			Critical Section 共享资源(数据) 临界区				Wait Set  线程等待区
+
+		
+			
+		扩展Java并发知识
+			Java Memory Mode   描述了Java线程如何通过内存进行交互  
+			happens-before 原则  为什么使用		synchronized  volatile final  怎么来实现这一原则的
+
+			Locks & Condition 对象(5.0之后加)  Java锁机制 和等待条件的高层实现 java.util.concurrent.locks 	
+
+			线程的安全性
+				原子性与 可见性
+				java.util.concurrent.atomic  避免原子性问题
+				synchronized (原子性操作)& volatile 可见性编程
+				DeadLocks  死锁
+				Worker Thread 模型  读写模型
+
+			并发编程的工具 java5		java.util.concurrent  简化了编程模型
+				线程池ExecutorService
+				Callable & Future
+				BlockingQueue
+				
+			书:<java核心技术> <java并发编程实战>
+				Core Java  Volume i - Fundamentals
+				Java  Concurrency in practice
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

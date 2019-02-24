@@ -1,8 +1,300 @@
-�����ĵ���ģʽ���ļ��֣�
-����ʽ 	��֧�������� �̰߳�ȫ
-����ʽ  ֧��������   �̲߳���ȫ
-ͬ������ʽ Synchronized Lazy  ��Ҫ�������ʽ���̲߳���ȫ  Ч��̫��
-˫��������ʽ  �Ƽ�ʹ��   �̰߳�ȫ ֧�������� Ч�ʸ�
-��̬�ڲ�������ʽ �Ƽ�ʹ�� �������ʽ��֧�������� �̰߳�ȫ ֧�������� Ч�ʸ�
+		设计模式分类:
+		1. 创建型 工厂方法模式、抽象工厂模式、单例模式、建造者模式、原型模式
+		2. 结构型 适配器模式、装饰器模式、代理模式、外观模式、桥接模式、组合模式、享元模式
+		3. 行为型 策略模式、模板方法模式、观察者模式、迭代子模式、责任链模式、命令模式、备忘录模式、状态模式、访问者模式、中介者模式、解释器模式
 
-ö���൥�����ģʽ enumeration
+		设计模式Design Pattern:是一套被反复使用 多数人知晓的 经过分类编目的 代码设计经验的 总结
+		目的:  重用代码  容易被别人理解 保证代码可靠性
+		
+		单例模式
+			应用场景:  配置文件 工具类 线程池 缓存 日志对象 都有且只需要一个
+			
+			恶汉模式:
+				public class Singleton{
+					// 1. 将构造方法私有化, 不允许外部直接创建对象
+					private Singleton(){}
+					// 2. 创建 类的唯一实例, 使用private static 修饰
+					private static Singleton instance = new Singleton();	
+					// 3. 提供一个用于获取实例的方法,使用public static 修饰
+					public static Singleton getInstance(){ return instance; }
+				}
+					测试:
+						Singleton s1 = Singleton.getInstance();
+			
+			懒汉模式:
+				public class Singleton{
+					// 1. 将构造方法私有化, 不允许外部直接创建对象
+					private Singleton(){}
+					// 2. 声明 类的唯一实例, 使用private static 修饰
+					private static Singleton instance = new Singleton();	
+					// 3. 提供一个用于获取实例的方法,使用public static 修饰
+					public static Singleton getInstance(){ 
+						if(instance==null){
+							return instance; 
+						}
+					}
+				}	
+		
+    常见的单例模式有哪几种？
+	
+	饿汉式 	不支持懒加载 线程安全 加载类时比较慢、运行时获取对象速度快
+	懒汉式  支持懒加载   线程不安全 加载类时比较快、运行时获取对象速度慢
+	同步懒汉式 Synchronized Lazy  主要解决懒汉式的线程不安全  效率太低
+	双重锁懒汉式  推荐使用   线程安全 支持懒加载 效率高
+	静态内部类懒汉式 推荐使用 解决饿汉式不支持懒加载 线程安全 支持懒加载 效率高
+
+	枚举类单例设计模式 enumeration 推荐使用
+		enum Singleton{
+			INSTANCE;
+			public void method(){
+				System.out.println("something");
+			}
+		}
+	
+	
+	
+	
+	责任链模式
+		概念:  Handler Chain   Requst  Client
+			将接受者对象连城一条链,在这条链上传递请求 ,直到有一个接收对象 处理它.通过让更多对象有机会处理请求,避免了请求的发送者和接受者之间的耦合
+				
+		如何解耦
+			
+		应用场景: 1.早起 AWT ,后来使用观察者进行替代  
+				  2. Exception Handling 异常处理 每一层级可以选择自己处理或者向上抛
+				  3. JavaScript Event Model 事件模型包含三个阶段 ①capturephase 捕获 ② target phase ③ bubblingphase 冒泡
+				  4. FilterChain in Web 拦截器  不是纯 责任链模式
+				  5. Spring Security  
+			开闭原则:对扩展开发,对变更说No
+			性能: 处理的时间长  创建了大部分对象不常用到
+		实现	
+			1. 价格处理人
+			public abstract class PriceHandler{
+				protected PriceHandler successor ; // 直接后继 用于传递请求
+				public void setSuccessor(PriceHandler successor){ this.successor = successor; }
+				public abstract void processDiscount(float discount) //处理折扣请求
+				
+			}
+			2. 责任链(销售、经理、总监、副总裁、CEO)
+				public class Sales extends PriceHandler{
+					@Override
+					public void processDiscount(float discount){
+						if(discount <= 0.05){ System.out.format("%s批准了折扣:%.2f%n",this.getzClass().getName(),discount );
+						}else{successor.processDiscount(discount);}
+					}
+				}
+			3. 客户请求折扣
+				public  class Customer{
+					public  PriceHandler  priceHandler ;
+					public void setPriceHandler(PriceHandler priceHandler ){
+							this.priceHandler = priceHandler ;}
+					public void requestDiscount(float discount){
+					priceHandler.processDiscount(discount);}
+					public static void main(String[] args){
+						Customer customer = new Customer();
+						customer.setPriceHandler(PriceHandler.createPriceHandler());
+						Random ran = new Random();
+						for(int i=1;i<=100;i++){   //模拟100个客户请求
+							System.out.print(i+":");
+							customer.requestDiscount(ran.nextFloat());
+						}
+					}
+					4. 创建PriceHandler的工厂
+						public class PriceHandlerFactory{
+							public static PriceHandler createPriceHandler(){  // 创建PriceHandler的工厂方法
+							PriceHandler sales = new Sales();	//...man dir vp ceo
+							sales.setSuccessor(man);            //... sales.setSuccessor(man); sales的直接后继是man
+							return sales;
+						}
+						}
+				}
+		
+	 
+	
+	
+	工厂模式:
+		
+			概念:实例化对象,用工厂方法代替new操作,包括工厂方法模式和抽象工厂模式,后者是前者的扩展。
+			意图:定义一个接口来创建对象,让子类来决定哪些类被实现。实例化推迟到子类中。
+			场景: 工厂方法模式: 一组类似的对象需要创建、编码时不能预见哪些类需要实现、考虑扩展性
+				  抽象工厂模式: JDBC  客户端--> 数据操作工厂 --> jdbc接口 --> db2 oracle mysql sqlserver
+					spring beanfactory  Beanfactory作为spring基础的Ioc容器,它是一个Bean工厂,用来生产Bean
+			好处: 系统可以在不修改具体工厂角色的情况下引进新的产品
+				  客户端不必关心对象的创建
+				  更好理解面向接口编程的思想
+				产品族，是指位于不同产品等级结构中功能相关联的产品组成的家族。  
+			工厂方法模式提供的所有产品都是衍生自同一个接口或抽象类   工厂方法提供的一系列产品称为一个等级结构
+			抽象工厂模式所提供的产品则是衍生自不同的接口或抽象类  抽象工厂模式所提供的一系列产品就组成一个产品族 
+	 
+	适配器模式:
+			
+			定义: 将一个类的接口,转换成客户期望的另外一个接口,使原本由于接口不兼容不能一起工作的那些类一起工作
+			构成: Client --> Target(Requst():void) <-- Adapter (new Adapter())--> Adapter
+					客户端--  	目标接口				适配器			 		原本接口			
+						把Adapter转换成 客户需要的 Target,可以是具体的类或者抽象的类
+			分类: 
+				1.组合方式: 对象适配器 特点 是 把"被适配者" 作为一个对象组合到 适配器类中,以修改目标接口包装被适配者
+				2.继承方式: 类适配器 特点 是 通过多重继承不兼容的接口  实现对目标接口的匹配  单一的为某个类 实现适配
+			区别: 组合的方式可以 适配 被适配者的任何子类  而继承的方式,因为是通过单继承故只能适配一个类	  
+		
+			好处: 1. 透明 客户端可以调用同一个接口
+				  2. 重用 解决现存类和复用环境要求不一致的问题
+				  3. 低耦合 将目标类 和适配者类 解耦 通过引入一个适配器类 重用现有的适配者类,无需修改原有代码
+	
+	模板方法模式:
+	
+		定义: 模板方法模式在一个方法中定义一个算法的骨架，而将一些步骤的实现延迟到子类中。
+			  模板方法使得子类可以在不改变算法结构的情况下，重新定义算法中某些步骤的具体实现。
+		
+		步骤: 
+			1. 抽象基类,为所有子类提供一个算法框架,final声明一个抽象模板方法 禁止子类对算法的框架做任何改变
+			2. 模板方法中定义几个步骤,基本方法(提供默认实现,使用private修饰,用于向下屏蔽细节) 抽象方法(使用 protected abstract修饰,确保子类可以复写)
+			3. 子类 继承 基类,实现基类的抽象方法
+		钩子: Hook 钩子函数,提供一个默认或空的实现,具体的子类可以自行决定是否挂钩以及如何挂钩
+			4. 模板方法中添加一个if(isxxx()){...} protected Boolean isxxx(){ return true;} 子类决定是否实现
+	
+		实现要素: 准备一个抽象类,将部分逻辑以具体方法的形式实现,然后声明一些抽象方法交由子类实现剩余逻辑,用钩子方法给予子类更大的灵活性最后汇总方法构成一个不可改变的模板方法。
+	
+		使用场景: 
+			1.算法或操作遵循相似的逻辑
+			2.重构时(将相同的代码抽取到父类中)  老的系统
+			3.重要 复杂的算法,核心算法设计为模板算法  新系统
+		优点:	封装性好  复用性好 屏蔽细节 便于维护
+		
+		缺点:   单 继承  
+		案例分析:
+		电信系统(老) 种类繁多数量巨大的日志  --  抽取共性 --- 获得规律 --模板方法
+																| ------获得文件
+																		打开文件
+																		读取日志结构
+																		处理单行日志 -- 抽象基类 钩子函数
+																		清理工作
+																		
+	
+	策略模式:
+	
+		定义:
+			将可变的部分 从程序中抽象分离成算法接口, 在该接口下分别封装一系列算法实现 并使他们可以相互替代,客户端程序独立于算法的改变。
+		
+		组合:
+			在类中增加一个私有域,引用另外一个已有的类的实例,通过调用 引用实例的方法 从而获得新的功能,这种设计被称为 组合 
+			将飞行行为抽象 为 接口, 在父类中持有该接口,并由该接口代理飞行行为
+	
+		步骤:
+			1. 一个抽象父类(通用行为),两个子类
+			2. 定义一个策略接口FlyingStragety(提供抽象飞行行为)
+			3. 父类中把抽象接口 作为私有属性注入,提供set方法和飞行方法
+			4. 新建一个包提供所有的策略算法实现,新建类实现策略接口FlyWithWin
+			5. 子类中注入飞行算法super.setFlyingStragety(new FlyWithWin());
+			
+		策略模式的设计原则
+			1.找出应用值需要变化的部分,独立出来
+			2.面向接口编程,而不是面向实现 编程
+			3.多用组合,少用继承
+	
+		实现:
+			1. 通过分离变化得出 策略接口 Strategy
+			2. Strategy的实现类 
+			3. 客户程序 有一个 Strategy 
+			4. 在客户程序中选择/组装正确的Strategy实现类
+		
+		优点:
+			1. 使用了组合,使架构更加灵活
+			2. 富有弹性,可以较好的应对变化 开闭原则
+			3. 更好的代码复用性  相对于继承
+			4. 消除大量的条件语句
+		缺点：
+			1. 客户代码需要了解每个策略实现的细节
+			2. 增加了对象的数量
+		适用场景：
+			1. 遗留系统 许多相关的类仅仅是行为差异
+			2. 运行时选取不同的算法变体
+			3. 通过条件语句在多个分支中选取一个
+			  
+			  
+	观察者模式
+		
+		
+		定义: 定义对象间的一种一对多的依赖关系,当一个对象的状态发生变化改变时,所有依赖于它的对象都得到通知并被自动更新。
+		结构: 	ConcreteSubject --> Subject (+Attach(o:Observer) + Notify) ---> Observer(+Update()) <---  ConcreteObserver 是Observer接口实现类
+			
+		步骤:
+			1. 目标对象的定义    知道观察它的观察者,并提供注册(添加)和删除观察者的接口
+				定义一个集合保存观察者的名单 定义 添加和删除方法 使用protected声明notify方法,向所有注册对象更新状态
+			2. 具体的目标对象的定义 负责把有关状态存入到相应的观察者对象中  如天气变化
+				定义目标状态 get和set封装set中添加notify 
+			3. 观察者的接口定义  定义一个更新的接口给那些在目标发生改变的时候被通知的对象
+				传入目标对象,获取目标对象状态
+			4. 观察者的具体实现  实现更新的方法,使自身的状态和目标的状态保持一致 
+				私有一个观察者的状态属性 
+			5. 测试: ①创建目标 ②创建观察者 ③注册观察者 ④更改目标状态	
+			
+		认识观察者模式
+			① 目标与观察者之间的关系   1 : N 或者 1:1 N :1
+			② 单向依赖   观察者依赖目标
+			③ 命名建议   又称为 发布订阅模式 目标接口名称后加Subject 观察者接口名称加Observer
+			④ 触发通知的时机   完成状态维护后
+			⑤ 观察者模式的调用顺序示意图  
+				准备阶段:维护目标对象和观察者 创建目标对象 --> 创建观察者对象 --> 向目标对象注册观察者对象
+				运行阶段: 目标对象状态改变 --> 通知所有注册的观察者对象 --回调目标对象获取相应的数据
+			⑥ 通知的顺序  不确定的,多个观察者的顺序是平行的
+		实现的两种方式
+			推模型: 目标对象主动向观察者推送目标的详细信息,推送的信息通常是目标对象的全部或部分数据
+			 
+			拉模型: 目标对象在通知观察者的时候只传递少量的信息如果观察者需要具体信息,主动到目标对象获取
+		
+		利用java实现观察者
+			java.util.Observable类 接口Observer定义了update方法
+			自己实现观察者模式和Java实现的对照
+			① 不需要再定义观察者和目标接口
+			② 具体目标实现中不需要维护观察者的注册信息 Observable类已经实现
+			③ 触发通知的时机, 先调用setChanged方法,java更精准控制触发 带参数的notifyObservers 推 不带参数的是 拉模型
+			④ 具体观察者实现中,update方法可以同时支持拉模型和推模型
+		
+		观察者模式优点:
+						1. 观察者模式实现了观察者 和目标之间的抽象耦合
+						2. 观察者模式实现了动态联动
+						3. 观察者模式支持广播通信
+		
+				  缺点:  可能引起无谓的操作
+						 
+		应用场景:			
+				1. 当一个抽象模型有两个方面,其中一个方面的操作依赖于另一个方法的状态变化
+				2. 如果更改一个对象,需要同时连带更改其它对象,不知道有多少需要被连带更改
+				3. 当一个对象必须通知其它的对象,但是不希望这个对象和其它被通知对象 是松散耦合
+	
+		 
+			
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	

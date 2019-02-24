@@ -19,7 +19,7 @@ $ yum install -y yum-utils \
   yum install lvm2
 5.设置yum源
 $ yum-config-manager \
-    --add-repo \
+   yum --add-repo \
     https://download.docker.com/linux/centos/docker-ce.repo
 6.安装docker
 6.1. 安装最新版本

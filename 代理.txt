@@ -1,0 +1,69 @@
+代理
+	代理模式  ---------------- 动态代理
+	Subject							InvocationHandler			Subject
+		|								|							|
+	ProxySubject---->  Proxy ---->  ProxyHandler    ---->	  RealSubject	
+	Java动态代理类位于java.lang.reflect包下,一般主要涉及到以下两个类
+	(1). Interface InvocationHandler:该接口中仅定义一个方法
+		public object invoke(Object obj , Method method , Object[] args)
+		在实际使用时,第一个参数obj一般指被代理类,method是被代理的方法,args为该方法的参数数组 这个抽象方法在代理类中动态实现
+	(2). Proxy 该类即为动态代理类
+		static Object newProxyInstance(ClassLoader loader , Class[] interfaces , InvocationHandler h)
+			loader 类加载器  interfaces 实现的接口  InvocationHandler h 
+		返回代理类的一个实例,返回后的代理类可以被代理类使用(可使用被代理类在接口中声明过的方法)
+
+
+	JDK 动态代理和 CGLIB 动态代理 的区别
+	JDK动态代理: 只能代理实现了接口的类
+	CGLIB动态代理: 针对类 实现代理 ,对指定目标类产生一个子类 通过方法拦截技术 拦截所有父类方法的调用
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

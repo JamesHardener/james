@@ -1,0 +1,317 @@
+数据绑定
+ 将一个用户界面元素(控件)的属性绑定到一个类型实例上的某个属性的方法
+ 
+ eclipse  			 idea
+ workspace			 project
+ project			 module
+
+	基本类型
+		key必须传,只能是int类型 400 参数错误 500不能为空
+	
+	包装类型
+		key可以不传 可以为空,对可能为空的数据 设置为包装类型  也可使用@RequestParam 是否必须配置
+		
+	数组
+		基本类型 包装类型 String的对象类型
+		
+		
+	同属性多对象
+	@InitBinder("user")
+	public  void initUser(WebDataBinder binder){
+		binder.setFiledDefaultPrefix("user.");
+	}
+
+	List 
+		通过下标 来 传递不同对象的属性  注意:对象下标一定是连续的否则会浪费资源
+	Set
+		应用场景:大部分是做对象的重复判断  
+		SpringMVC对set的支持不是很好,往往需要使用前初始化set,重写hashcode方法和equals方法
+	Map
+	
+	xml
+		在类 添加 @XmlRootElement(name="admin") 注解 在属性的get方法上添加@XmlElement(name="name")
+		Controller中 参数使用@RequestBody 注释
+		application/xml 
+	json
+		application/json
+	
+	
+	PropertyEditor
+		一般不实现PropertyEditor  接口而是 继承PropertyEditorSupport类 实现类 是可以扩展的  局部使用配合webdatabinder 使用
+	
+	Formatter   格式化器 是一个接口  继承Printer<T> Parser<T>   实现类 是可以扩展的  全局或局部  Source = String
+	
+	Converter   转化器  这个接口有连个泛型 S  source T  target  实现类是 final 限制扩展 全局或局部 Source = 自定义的
+
+	RESTful
+		起源   REST这个词是 Roy Thomas Fieldding 在他2000年博士论文中提出,他是apache第一任主席,Fieldding将他对互联网软件的架构原则定名为REST
+			
+		名称	Respresentational State Transfer 的缩写  省略了 Resource 
+		资源 	文本 图片 服务 音频 视频 ...
+		表现层	Respresentational  文本: txt html xml json  二进制      图片: png jpj
+				具体表现形式通过 http协议的content-type 和accept 描述
+				Case : book 是一个资源,它获取不同的格式   任何一个资源只代表资源的实体,不代表资源的展现形式
+		状态转化  State Transfer   
+				GET 	获取资源  具有幂等性
+				POST	创建资源不具有幂等性 	
+				PUT 	创建更新资源 具有幂等性
+				DELETE  删除资源	 具有幂等性
+			幂等性: 每次HTTP请求相同的参数,相同的URI产生的结果也是相同的
+		设计
+			避免动词 如 show 
+			POST /transaction   from =1 & to =2& amount=500
+			www.example.com/app/  HEADER   version=1.0
+		
+		总结
+			1.每一个URI代表一种资源
+			2.客户端和服务端之间,传递这种资源的某种表现层
+			3.客户端通过HTTP动词,对服务器端资源进行操作,实现"表现层状态转化".
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

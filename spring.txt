@@ -1,0 +1,135 @@
+	Spring入门简介
+		简介
+			Spring 是一个轻量级控制反转 和 面向切面的容器框架,它主要是为了 解决企业应用开发的复杂性而诞生的
+			目的: 解决企业应用开发的复杂性而诞生的
+			功能: 使用基本的JavaBean代替EJB
+			范围: 任何Java应用
+			存在的优势:
+				定位的领域是许多其它的流行的framework没有的
+				Spring是全面 和模块化的
+				它的设计从底部帮助你编写易于测试的代码
+				Spring是潜在的一站式解决方案
+				
+				优势:
+					低侵入式设计,代码污染极低
+					Write One  Run Anywhere
+					DI 有效的降低了耦合度
+					AOP提供了通用任务的集中管理
+					ORM 和DAO 简化了对数据库访问
+					高度开放性,并不是强制的
+				带来的好处:
+					可以有效组织中间层对象
+					可以使用统一的配置文件
+					促进良好编程习惯,减少编程代价
+					易于单元测试
+					是EJB成为一种备选
+					为数据存取提供一致的框架
+				特点:
+					方便解耦,简化开发
+					AOP编程的支持
+					声明式事务的支持
+					方便程序的测试
+					方便集成各种优秀框架
+					降低JavaEESAPI的使用难度
+					Spring的源码是经典学习必备
+			Spring ioC 容器深入理解
+				ioC概述
+					ioC是Spring容器的内核,AOP
+				Java反射机制
+				
+				资源访问工具类
+				
+				BeanFactory 和 ApplicationContext的简介
+				
+				Bean的生命周期
+				
+				Spring的作用域
+					singleton:	<bean id="userinfo" class="com.jk.UserInfo" scope="singleton"> </beans>
+						仅存在一个单实例Bean    对于非线程安全的对象采用单实例设计模式
+					prototype:	<bean id="userinfo" class="com.jk.UserInfo" scope="prototype"> </beans>
+						每次从容器中调用Bean,都返回一个新的实例   默认情况下,Spring容器启动时不实例化prototype 的Bean
+					Web应用环境的 作用域  需要 额外配置
+						<filter>    低版本Web容器配置
+							<filter-name> requestContextFile </filter-name>
+							<filter-class> org.springframework.web.filter.RequestContextFilter </filter-class>
+						</filter>
+						<filter-mapping>
+							<filter-name> requestContextFilter </filter-name>
+							<servlet-name> /* </servlet-name>
+						</filter-mapping>
+						
+						<listener>
+							<listener-class>
+							org.springframework.web.context.request.RequestContextListener 
+							</listener-class>
+						</listener>	
+							
+					request:	<bean id="userinfo" class="com.jk.UserInfo" scope="request"> </beans>
+						
+					session:	<bean id="userinfo" class="com.jk.UserInfo" scope="session"> </beans>
+					
+					global Session:	<bean id="userinfo" class="com.jk.UserInfo" scope="global_Session"> </beans>
+				
+					实现自定义Scope类
+					org.springframework.beans.factory.config.Scope
+					注册自定义Scope类
+					ConfigurableBeanFactory.registerScope(String scopeName , Scope scope)
+					使用自定义的Scope:
+					Scope customScope = new ThreadScope();
+					beanFactory.registerScope("thread",customScope);
+					<bean id="***" class="***" scope="scopeName"  />
+					
+					
+	配置文件的整合
+	
+		多个配置文件:
+			Spring_Common.xml位于common文件夹下
+			Spring_Connection.xml位于 connection 文件下
+			Spring-Modeule.xml 位于 module 文件夹下
+		传统加载方式:
+		ApplicationConteXt context = new ClassPathXmlApplicationContext(
+		new String[]{
+			"Spring_Common.xml","Spring_Connection.xml","Spring-ModeuleA.xml"}};
+		整合配置文件: Spring-All-Modeule.xml		
+		<beans...>	 
+			<import resource="common/Spring_Common.xml" />
+			<import resource="connection/Spring_Connection.xml" />
+			<import resource="module/Spring_Modeule.xml" />
+		</beans>
+		整合后加载方式:
+		ApplicationContext context = new ClassPathXmlApplicationContext("Spring-All-Modeule.xml");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

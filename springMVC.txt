@@ -1,0 +1,285 @@
+SpringMVC 通过一套MVC注解,让POJO成为处理请求的控制器,无需实现任何接口,同时SpringMVC还支持REST风格的URL,在数据绑定、视图解析。本地化处理及静态资源处理上不熟表现
+
+	优点: 耦合性低  重用性高  生命周期成本低 部署快 可维护性高  有利于软件工程化管理
+	缺点: 没有明确的定义  不适合小型 中等规模的应用  增加系统结构和实现的复杂性  视图与控制器间的过于紧密的连接 视图对模型数据的低效访问
+			一般高级的界面工具或构造器不支持模式
+	SpringMVC体系结构
+		SpringMVC 是基于Model 2 实现的技术框架
+
+		配置DispatcherServlet 类  在web.xml中配置
+		<context-param> ① 业务层和持久层的Spring配置文件,这些配置文件被父Spring容器所应用
+			<param-name> contextConfigLocation </param-name>
+			<param-value> classpath:springmvc.xml </param-value>
+		</context-param>
+			
+		<listener>
+			< listener-class > org.springframework.web.context.ContextLoaderListener </listener-class >
+		</listener>
+
+		<servlet > ② 声明DispatcherServlet
+			<servlet-name> core </servlet-name>
+			<servlet-class > org.springframework.web.servlet.DispatcherServlet </servlet-class>
+		</servlet>
+		
+		<servlet-mapping>
+			<servlet-name> core </servlet-name>
+			<url-pattern> *.html </url-pattern>  //③请求后缀
+		</servlet-mapping>	
+	
+	DispatcherServlet 类的运行体系
+		DispatcherServlet的核心本质 是一个Servlet
+		init方法在整个系统启动时运行,且只运行一次
+		service 方法在系统运行的过程中处于侦听模式,侦听并处理所有的Web请求
+
+	DispatcherServlet的 继承体系
+			HttpServlet	 - javax.servlet.http
+				HttpServletBean 	-org.springframework.web.servlet //是Spring 对于Servlet最低层次的抽象
+					FrameworkServlet	- org.springframework.web.servlet //进一步抽象,真正初始化一个Spring容器(WebApplicationContect),并引入到Servlet对象之中
+						DispatcherServlet	-org.springframework.web.servlet //通过 initStrategies 方法查找并装配Spring容器中用户定义的组件Bean
+
+		initStrategies方法
+			initMultipartResolver(context);				// 初始化上传文件解析器
+			initLocaleResolver(context);				// 初始化本地化解析器
+			initThemeResolver(context);					// 初始化主体解析器
+			initHandlerMappings(context);				// 初始化处理器映射器
+			initHandlerAdapters(context);				// 初始化处理器适配器
+			initHandlerExceptionResolvers(context);		// 初始化处理器异常解析器
+			initRequestToViewNameTranslator(context);	// 初始化请求到视图名翻译器
+			initViewResolvers(context);					// 初始化视图解析器
+			initFlashMapManager(context);				// 初始化FlashMap管理器
+
+
+SpringMVC常用注解类
+	
+	RequestMapping注解类
+		RequestMapping注解类的使用方法
+		
+			控制器类,使用@Controller注解标注,并在配置文件中用<context:component-scan/>扫描
+			在Controller控制器类的类定义和方法定义处都可以标注@RequestMapping注解
+			DispatcherServlet截获请求后,就可以通过控制器上的@ReuquestMapping提供的映射信息确定请求所对应的处理方法
+		RequestMapping注解类的属性
+			value 代表请求路径,可以省略
+			method  指定请求的method类型, GET POST PUT DELETE	,默认可以不带表示任意请求都可以,也可以传数组
+			consumers 指定请求的提交内容类型(Content-Type), 如 application/json ,text/html,可以是字符串或数组
+			produces  指定请求中必须包含某些参数值,才会触发这个方法  produces ="text/plain"
+			params	 指定请求中必须包含某些参数值,才会触发这个方法   params = "maParam=myValue"
+			headers  请求头Header中必须包含某些指定的参数值,才会触发这个方法 headers="content-type=text/*"
+		
+		定义Ant风格和带占位符的URL
+			/user/*/login 		匹配/user/aaa/login 
+			/user/login??		匹配/user/loginAA
+			/user/**/{userId}   匹配/user/aaa/bbb/123
+		
+	四大注解类Component Controller Service Repository
+			Component  通用标注  类级别的,可以不带参数 , 代表bean名字,在进行注入的时候可以通过名字进行注入 
+						在不清楚那个注解时,可以使用Component  ,但是为了代码逻辑清晰,还是建议使用具体的注解
+						在SpringMVC的配置中,通过context:component-scan使注解生效
+						<component:component-scan base-package="com.jk.*" use-default-filters ="false" >
+							<content:include-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+							<content:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+						</context:component-scan >
+						使用@Resource 或 @Autowired 注解实现注入
+						@Autowired默认按类型装配,默认情况下要求依赖对象必须存在,
+						如果允许null,设置@Autowired(required=false),如果想使用名称装配可以结合@Qualifier注解进行使用
+						@Resource 默认按照名称进行装配,可以用name属性进行指定,注解写在字段时,默认取字段名按照名称查找,
+						如果写在setter方法上默认取属性名进行装配,当找不到名称匹配的bean才按照类型进行装配,但是name属性一旦指定《就只会按照名称装配
+							推荐使用@Resource ,减少了与Spring的耦合,是代码更加优雅
+			Controller  标注web控制器
+			
+			Service    标注Service层的服务
+			
+			Repository   标注DAO层的数据访问
+	其它注解类
+			PathVariable注解类    @RequestMapping注解中使用占位符的情况下,需要使用@PathVariable注解指定占位符参数
+						 @RequestMapping(value="/user/{userId}/roles/{roleId}",method= RequestMethod.GET)
+						 Public String getLogin( @PathVariable("userId") String userId ,@PathVariable("roleId") String roleId){
+							...
+						 }
+						 @RequestMapping(value="/javabeat/{regexp1:[a-z-]+}",method= RequestMethod.GET)
+						 Public String getRegExp( @PathVariable("regexp1") String regexp1){
+							...
+						 }
+			RequestParam注解类 获取参数的方式,一种是使用@RequestParam直接获取,或者使用request.getParameter("name");
+							有三个属性:value required defaultValue ,不带任何参数,表示需要的参数名与标注的变量名相同
+							可以通过required=false或者true 来要求@RequestParam配置的前端参数是否一定要传
+							参数类型尽量不要使用基本类型int,long等,而应该使用具体的对象类Integer、Long、String等
+			CookieValue注解类     读取Cookies中的值,并且赋值给变量 有但三个属性value required defaultValue,分别表示Cookie的名字,是否必须Cookie值
+			
+			SessionAttributes注解类
+							
+							如果希望在多个请求之间公用某个模型属性数据,则可以在控制器类标注一个@SessionAttributes,SpringMVC会将模型中对应的属性暂存到HttpSession中
+			ResponseBody注解类
+							用于将Controller的方法返回的对象,通过适当的HttpMessageConverter 转换为指定格式后,写入到Request对象的body数据区
+							返回如 json 、xml等时使用
+							在SpringMVC配置文件中通过<mvc:annotation-driven />,给AnnotationMethodHandlerAdapter初始化7个转换器
+							
+							常用的转换器:
+							ByteArrayHttpMessageConverter   读写二进制数据
+							StringHttpMessageConverter  将请求信息转换为字符串
+							ResourceHttpMessageConverter  读写org.springframework.core.io.Resource对象
+							SourceHttpMessageConverter 读写javax.xml.transform.Source类型的数据
+							XmlAwareFormHttpMessageConverter  处理表单中的XML数据
+							Jaxb2RootElementHttpMessageConverter 通过JAXB2 读写XML 消息,将请求转换到标注的XmlRootElement和XmlType的注释中
+							MappingJacksonHttpMessageConverter  读写JSON 数据
+							
+			RequestHeader 注解类
+							可以把Request请求header部分的值绑定到方法的参数上
+							Host				localhost:8080
+							Accept				text/html,application/xhtml+xml,application/xml;q=0.9
+							Accept-Language		fr,en-gb;q=0.7,en;q=0.3
+							Accept-Encoding		gzip,deflate
+							Accept-Charset		ISO-8895-1,utf-8;q=0.7*;q=0.7
+							Keep-Alive			300
+						@RequestMapping("、displayHeaderInfo")
+						public void displayHeaderInfo(@RequestHeader("Accept-Encoding") String encoding ,@RequestHeader("Keep-Alive") long keepAlive ){
+							...
+						}
+			
+	 
+SpringMVC数据校验
+
+			JSR303 校验框架
+				简介 
+					JSR 303 用于Java Bean 值的字段的值进行验证,使得验证逻辑业务代码中脱离出来
+					是一个运行时的数据校验框架,在校验之后的验证的错误信息会被马上返回
+					一般用于表单提交页面(如用户名必填/只能由数字字母组成等)
+				JSR303 校验框架 常用注解类
+					@NotNull	注解元素必须是非空 
+					@Null		注解元素必须是空
+					@Digits		验证数字构成是否合法
+					@Future		验证是否在当前系统时间之后
+					@Past		验证是否在当前系统时间之前
+					@Max		验证是否小于等于最大指定整数值
+					@Min		验证是否大于等于最小指定整数值
+					@Pattern	验证字符串是否匹配指定的正则表达式
+					@Size		验证元素是否在指定范围内
+					@DecimalMax 验证值是否小于等于最大指定小数值
+					@DecimalMin 验证值是否大于等于最小指定小数值
+					@AssertTrue	被注释的元素必须为true
+					@AssertFalse被注释的元素必须为false
+			Hibernate Validator  扩展 注解类
+				Hibernate Validator  扩展注解类
+					@Email  被注释的元素必须是电子邮箱地址
+					@Length 被注释的字符串的大小必须在指定的范围内
+					@NotEmpty 被注释的字符串必须非空
+					@NotBlank  被注释的字符串必须非空,且长度需要大于0
+					@Range	被注释的元素必须在合适的范围内
+
+				Hibernate Validator Maven 依赖
+					hibernate-validator-5.5.5.Final.jar
+					validation-api-1.1.0.Final.jar
+					slf4j-api-1.7.12.jar
+					slf4j-log4j12-1.7.12.jar	
+				<dependency>
+					<groupId> org.hibernate </groupId>
+					<artifactId> hibernate-validator </artifactId>
+					<version> 5.2.2.Final </version>
+				</dependency>
+				<dependency>
+					<groupId> org.slf4j </groupId>
+					<artifactId> slf4j-api </artifactId>
+					<version> 1.7.12 </version>
+				</dependency>	
+				<dependency>
+					<groupId> org.slf4j </groupId>
+					<artifactId> slf4j-log4j12 </artifactId>
+					<version> 1.7.12 </version>
+				</dependency>
+				使用Hibernate Validator 扩展注解类
+					@NotBlank(message = "用户名不能为空")
+					private String userName ;
+					
+					@Email(message = "邮件格式不正确")
+					private String email;
+					
+					@Range(min =18, max =40, message = "年龄需要在18-40岁之间")
+					private int age；
+					
+					@Length(min = 2, max =10, message ="真实姓名长度2-10 之间")
+					private String realName;
+
+			如何配置SpringMVC 校验框架
+					在/WEB-INF/springmvc.xml中配置
+					< mvc:annotation-driven validator="validator" />
+					<bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean" >
+						<property name="providerClass" value="org.hibernate.validator.HibernateValidator" / >
+						<!-- 如果不加载默认到 使用classpath 下的ValidationMessages.properties -->
+						<property name="validationMessageSource" ref="messageSource" />
+					</bean>
+					@RequestMapping(value="/doRegister",method = RequestMethod.POST)
+					public String doLogin(@Valid User user , BingdingResult result, ModelMap map ){ ... }	
+ 					
+			获取校验结果
+					校验结果保存在BingdingResult 或 Errors 对象中:
+					这两个类都位于org.springframework.validation 包中
+					需要校验的表单对象和其绑定结果对象或错误对象是成对出现的
+					Errors 接口提供了获取错误信息的方法,如 getErrorCount(0获取错误的数量,getFieldErrors(String field)得到成员属性的校验错误列表
+					BingdingResult 接口扩展了Errors接口,以便可以使用Spring的org.springframework.validation.Validator对数据进行校验,同时获取数据绑定结果对象的信息
+					
+			在JSP页面中显示错误
+					${ERR_userName } <br>
+					<span> 用户名: </span> <input type="text" name="userName" >
+					
+			国际化错误信息
+					在class下面新建i18n文件夹,并新建messages.properties和 messages_zh_CN.properties文件
+					在/WEB-INF/springmvc.xml中配置国际化
+					<bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource" p:basename="i18n/messages" / >
+			
+			自定义校验规则
+					定义注解类,并使用Constraint注解标注,属性validatedBy指定校验实现类
+					@Target({METHOD ,FIELD ,ANNOTATION_TYPE ,CONSTRUCTOR , PARAMETER })
+					@Retention(RUNTIME)
+					@Documented
+					@Constraint(validatedBy ={BetweenValidator.class )
+					public @interface Between {
+						String message() default "{Between.user.age}";
+						Class<?> groups() default {};
+						Class<? extends Payload>[] payload() default {};
+						int min();
+						int max();
+					}
+					定义实现类, 需要集成ConstraintValidator 接口 ,isValid方法负责校验
+					public class BetweenValidator implements ConstraintValidator <Between , Integer>{
+						private int min;
+						private int max;
+						@Override
+						public void initialize(Between annotation){
+							min = annotation.min();
+							max = annotation.max();
+						}
+						
+						@Override
+						public boolean idValid(Integer value , ConstraintValidatorContext context){
+							if(value == null){
+								return false;
+							}
+							if(value >= min && value <= max){
+								return true;
+							}
+							return false;
+						}
+					}
+					
+					
+					
+					
+
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,114 @@
+SpringMVC中拦截器
+
+		了解拦截器
+			通过统一拦截从 浏览器发送 到 服务端的请求来 完成 功能的增强
+			
+		掌握SpringMVC拦截器的原理和使用
+			拦截器的实现		
+			1. 编写拦截器类 实现 HandlerInterceptor 接口 
+				public  class TestInterceptor implements  HandlerInterceptor {...}
+			2. 将拦截器注册到SpringMVC框架中
+			3. 配置拦截器的拦截规则
+			<mvc:interceptors>
+				<mvc:interceptor>
+					<mvc:mapping path="/viewAll.form" />
+					<bean class="com.xxx.xx.interceptor.TestInterceptor" > </bean>
+				</mvc:interceptor>
+			</mvc:interceptors>
+		掌握SpringMVC拦截器的使用场景
+			使用原则:解决请求的共性问题 如 乱码问题 权限验证问题
+
+		拦截器方法的介绍
+		1. preHandler方法	在请求被处理之前调用
+			返回值为true,请求继续运行,否则被终止
+			Object为 被拦截的请求的目标对象
+		2. postHandler方法  在请求被处理之后调用
+			ModelAndView arg3 参数改变显示的视图,或发送视图的方法
+			arg3.addObject("msg","这里是从xxx传回的数据");
+			arg3.addViewName("hello.jsp")
+		3. afterHandler方法 请求结束之后调用
+			主要做 资源的销毁,不常用到
+
+		拦截器的其它实现  实现WebRequestInterceptor
+			和HandlerInterceptor区别: preHandler方法没有返回值(不能终止请求)、参数不一样
+			向SpringMVC注册的写法不变
+			
+		拦截器和过滤器区别
+		过滤器Filter依赖于Servlet容器,基于回调函数,过滤范围大
+		拦截器Interceptor依赖于框架容器,基于反射机制,只过滤请求
+
+		
+		
+		
+		Bingding
+			我们可以在Controller类的方法上通过 @ModelAttribute 来进行模型对象和页面的绑定
+			Forward和Redirect代表了两种请求转发方式:直接转发和间接转发.
+			对应到代码里,分别是RequestDispatcher类的forward()方法和HttpServletRequest类的sendRedirect()方法.
+			对于间接方式,服务器端在响应第一次请求的时候，让浏览器再向另外一个URL发出请求,从而达到转发的目的.它本质上是两次HTTP请求,对应两个request对象.
+　　		对于直接方式,客户端浏览器只发出一次请求,Servlet把请求转发给Servlet、HTML、JSP或其它信息资源,由第2个信息资源响应该请求,两个信息资源共享同一个request对象.
+		
+			log.debug(ReflectionToStringBuilder.toString(course));
+				// ReflectionToStringBuilder类 org.apache.commons.lang.builder.ReflectionToStringBuilder
+				用于日志输出,来调试我们的程序(将接收到的内容以 键值对的形式 输出的日志中)
+			 //	数据上传
+		@RequestMapping(value="/doUpload",method=RequestMethod.Post)
+		public String doUploadFile(@RequestParam("file") MuitipartFile file) {
+			if(!file.isEmpty()){
+				log.debug("Process file:",file.getOriginalFilename());
+				//	文件保存的工具类
+				FileUtils.copyInputStreamToFile(file.getInputStream(),new File("c:\\temp\immo\\",System.currentTimeMillis()+file.getOriginalFilename()));
+			}
+		}
+		
+		SpringMVC中使用ContentNegotiatingViewResolver 来对 相同格式的数据 进行 不同的数据呈现 
+			可以使用多个ViewResolver 使用order属性排序 InternalResourceViewResolver 放在最后
+		
+		Notepad++ 插件 JSON Viewer 可以把数据转换成  Json格式显示
+		SpringMVC的核心思想是 业务数据的抽取 和业务数据呈现相分离
+		
+		向浏览器返回 Json 对象
+		①
+		@RequestMapping(value="/{courseId}",method=RequestMethod.GET)
+		Public @ResponseBody Course getCourseInJson(@PathVariable Integer courseId){
+			return courseService.getCourseById(courseId);
+		}
+		②
+		@RequestMapping(value="/jsontype/{courseId}",method=RequestMethod.GET)
+		Public ResponseRntity <Course> getCourseInJson2 (@PathVariable Integer courseId){
+			Course course = courseService.getCourseById(courseId);
+			return new ResponseRntity <Course> (course,HttpStatus.OK);
+		}
+		@RequestMapping 注解URL请求路径
+		@PathVariable   路径变量注解
+		@RequestParam   参数注解
+		@Controller     注解Control类
+		@ResquestBody   获取请求发过来的JSON数据
+		@ResponseBody   将数据以JSON格式返回
+		@ModelArrtibute 请求参数绑定方法参数
+		redirect/forward 请求重定向/请求转发
+		multiparResolver 视图解析器
+		enctype="multipar/form-data" 用于form表单
+		MutipartFile 其中multipart/form-data 是新增的编码类型，以提高二进制文件的传输效率    文件处理接口
+		ResponseEntity   JSON返回值的另外一种方法
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+
+
+
+
+
+
+
+
+
