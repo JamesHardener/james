@@ -48,6 +48,28 @@ Erlangtuple结构为 {key ,value} key 为 atom类型 value 为一个term
 	1. tcp_listerners设置rabbitmq 的监听端口默认 5672
 	2. disk_free_limit磁盘低水位线， 若磁盘低于指定值停止接受数据
 	3. vm_memory_high_watermark 设置内存低水位线，低于水位线，开启流控机制，默认0.4
+	
+	
+	application:
+		name: rabbitmq
+	rabbitmq:
+		host: 192.168.100.100
+		port: 5672
+		username: guest
+		password: guest
+		virtual-host: /
+		# p端收到回调,确认消息发送结果
+		publisher-confirms: true
+		publisher-returns: true
+		template: 
+			mandattory: true
+			
+	# mybatis
+	mybatis:
+		type-aliases-package: com.dn.rabbitmq.model
+		mapper-locations: classpath:com/dn/rabbitmq/mapper/*.xml
+			
+
 
 RabbitMQ 命令介绍
 

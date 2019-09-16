@@ -1,0 +1,227 @@
+高性能服务架构和实战
+
+	Nginx 轻量级Web服务器反向代理服务器 电子邮件代理服务器 BSD-like协议下发行  俄罗斯人IgorSysoev 所开发
+
+		一致性Hash算法 :  根据不同的属性数据,生成一串不相同的Hash值,将值转化成0 - 2^32-1范围的整数形成一个环
+						(来自同一个IP和端口的处理请求经过Hash计算落在圆环位置一样的)
+			应用: MyCat 红黑树来 形成 抽象的环     MD4/5 	CRC16
+					 
+		轮询:	按照固定顺序将任务依次分配到下一个节点  
+				应用场景 DNS解析多IP     Nginx、LVS向下 转发消息   Zookeeper计算节点分配任务
+				不能保证每个节点处理能力都一样
+			
+		加权轮询: 依据 概率算法 最大公约数
+
+	Nginx 安装
+		Centos  下
+		1. yum -y install make zlib  zlib-devel gcc gcc-c++ ssh lintool      // 安装最下支撑组件
+		2. tar -zxvf ./nginx-1.8.0.tar.gz  					// 指定位置 解压tar
+		3. ./configure -prefix=/usr/nginx-1.8.0 make && make install      // 支持HTTP重写模块 安装PCRElib
+
+		常用命令
+			nginx  启动Nginx服务
+			nginx-t 检查配置文件是否正确
+			nginx -s reload 重加载、重启Nginx服务
+			nginx -s stop	停止Nginx服务
+
+			更改操作系统 "进程最大可打开数"的设置	
+				root权限 			vim /etc/security/limits.conf  
+				在主配置下加		*	soft nofile 65535		// soft 表示软件级别  hard 操作系统   * 对所有用户生效
+									*	hard nofile 65535
+				更改本次Shell会话	ulimit -n 65535
+			更改Nginx软件 "进程最大可打开数"的设置		
+				修改nginx.conf 		worker_rlimit_nofile	65535;
+									event {
+											use epoll;
+											worker_connections	65535
+										}
+				重启Nginx 		nginx -s reload						
+			查看是否生效		ps -elf | grep nginx
+								cat /proc/1598/limits 
+				
+			gzip		压缩模块 
+
+			rewrite		重写 依赖PCRE Lib
+				正则表达式
+						location ~* \.(jpg|gif|png|ioc|jpeg)$     对URL进行不区分大小写匹配 	 location关键字
+						$var1 ~ ^(\d+)$				var1 与一个整数匹配							 var1 set关键字定义的变量
+				
+				全局变量
+						$content_length  $content_type  $request_method $remote_addr $remote_port $request_uri  $server_addr $server_port
+				语法	rewrite regex replacement flag
+					
+					
+	LVS  
+		全称 Linux Virtual Server 张文嵩博士发起的开源项目 实际生产环境下是 建立在一个存在于网络层或链路层的负载均衡管理器		
+				
+			7层模式(5层中被称为应用层)
+				应用层协议									HTTP FTP TELNET 最灵活
+				表现层
+				会话层
+							(主要讲这3层协议、数据格式封装)
+				传输层协议 									TCP和UDP  携带内容信息,通过协议的规范提供某种通信机制
+				网络层协议									IP协议   源 和 目标的定位问题
+				数据链路层协议								物理	负责组合一组电信号 称 帧
+															逻辑	规则和协议保证 帧的正确性
+				物理层										网络设备层 网卡 交换机 传递电信号 或光信号
+			LVS体系之所以高效是因为 对链路层报文 IP报文 TCP报文进行了 修改或封装
+			
+		链路层报文	都包括目标MAC 和 源MAC地址  为了承载网络层的协议而存在
+			
+
+		网络层报文	
+			
+				TCP	通信层协议 表示两个点或者多个点之间进行通信 和当前的通信状态
+				IP 网络层协议  描述整个网络的构成情况
+			
+			
+		LVS 三种工作模式
+			NAT		一直由 LVS Master服务节点收到数据报m然后转给下层的Real Server节点,当下层处理完回给LVS Master节点 转发出去 
+					LVS的管理程序 ipvsadm 负责 绑定转发规则 并完成IP数据报文 和 TCP数据报文中属性的重写
+			
+			DR		基于数据报文重写
+			
+			TUN		基于IP隧道,对数据报文的重新封装
+			
+			
+		DNS  Domain Name System
+			单纯的DNS轮询容易导致各服务节点压力不平衡  当某个IP由于各种原因不能提供服务时,DNS同步非常慢
+			
+		CDN	 Content Delivery Network 内容分发网络 
+			一般用于 缓存图片 多媒体资源 各种静态文件资源
+			
+		Keepalived	实现了一套VRRP协议   允许物理服务器动态设置IP路由
+
+		Tengine		淘宝发起的Web服务器项目
+			
+			
+			
+	多路复用I/O			多用于高并发场景下
+		具体实现 select poll epoll kqueue
+			
+		优点 :
+			1. 不用单纯的使用多线程来解决高并发问题
+			2. 同一个端口可以处理多种网络协议
+			3. 操作系统上的优化 同时接受多个客户端的I/O 事件
+			4. 都是同步I/O
+	
+	AIO 在Windows下 使用 I OCP 技术 Linux 下使用 epoll 多路复用I/O技术模拟异步I/O
+			
+			
+			
+			
+	Netty 
+		提供了针对Protocol Buffer 、 JSON 这些信息的格式封装,基于责任链模式的编码和解码功能  处理上层特有服务如 客户端权限 简单数据读取
+			
+		Boss线程 实际上就是 Java NIO中的Selector, 负责发现连接到服务器的新的Channel,并将这个Channel经过检查后注册到Work连接池的某个EventLoop线程中,当Work线程发现系统有I/O事件时,调用相应的ChannelHandler事件
+		
+		ByteBuf 重写了NIO中的缓存结构
+		
+		Channel 通道 比NIO中的Channel 更抽象更丰富
+		
+		ChannelPipeline	通道水管 流淌数据
+
+		ChannelHandler	过滤器 ChannelPipeline中有若干过滤器
+		
+		为什么使用Netty
+			1.	对网络I/O 进行封装
+			2.	对信息格式进行封装
+			3.	解决技术层框架中的技术问题	空指针
+			4.	解决半包 和 粘包问题
+				半包 指 接收到的信息格式块 不完整
+				粘包 指 接收到一个完整的数据信息 并且也接收到下一个数据的部分信息
+			
+			FixedLengthFrameDecoder		解码器 将TCP/IP 的数据 按照  指定长度进行重新拆分,如果不满足就继续等待新的数据到达
+
+			LineBasedFrameDecoder		解码器 基于 最简单的 换行符 进行接收的信息的再组织
+				
+			DelimiterBasedFrameDecoder	按照自定义 分隔符进行信息的重新拆分
+			
+		
+	线程池
+		为什么要使用线程池
+			线程创建 销毁	状态切换 都是要消耗系统资源和时间的   保证后续请求不会等太长时间 也保证有足够的资源处理请求
+			
+		线程池选择
+			ScheduledThreadPoolExecutor 
+			
+			ThreadPoolExecutor  
+			
+			都实现了 ExecutorService 接口
+			
+			
+				
+	RPC Remote Producer	Call	Protocol  远程过程调用协议		
+				
+			Client 		PRC协议的调用者	
+			Server		远程服务上 业务具体实现
+			Proxy		存在于客户端
+			Message Protocol 一次完整的RPC Client-Server
+			Transfer/Network Protocol 传输协议层负责管理RPC框架所使用的网络协议 网络I/O模型
+			Processor	存在于服务端 ,用于管理RPC 接口的注册 判断客户端的请求权限 控制接口实现类的执行
+			IDL			跨语言的,并不是必须有的
+			
+		最典型的
+			Java RMI  SUM 提出的
+			GRPC	Google提出
+			Thrift	Facebook 提出 
+			Hetty	构建于 Netty 和 Hessian 基础上的高性能RPC
+				
+		Hystrix 熔断机制
+			当系统之间调用出现问题时,把异常控制在可控范围,封装出现系统雪崩
+			
+			
+		SOA 和 服务治理
+
+			系统之间调用
+				访问权限   版本控制  服务时效 次数控制  性能措施 跨平台
+		
+			SOA 面向服务的架构 
+				服务着眼于完整的业务   服务的粒度虽然粗犷但是可控,服务拆分的目标是保留重用度  服务集成目的是形成新的服务  SOA需要保证屏蔽细节  SOA让各个业务系统保持松散
+
+			ESB Enterprise Service Bus 企业服务总线
+
+
+	消息队列 MQ
+			消息 信息的载体
+			通信方式一种是 RPC 一种是 消息队列 消息从某一端发出后,首先进入一个容器进行处理和临时存储,当另外一端接受者准备好或满足一定条件 之后,再由容器发送到另一端
+			消息组件都要基于一种或多种消息协议才能进行工作
+				
+			gRPC 		Google提出一款RPC组件,使用HTTP2作为消息的描述格式 也支持HTTP
+			RabbitMQ	支持AMQP消息格式协议,通过第三方场景还可以支持MQTT
+			ActiveMQ	支持 AMQP STOMP MQTT
+			
+			XMPP 
+					前身是 Jabber 一个开源形式的组织制定的网络即时通讯协议IM通讯, 目前已被IETF国际标准组织完成标准化
+					基于XML进行IM系统开发,国内流行的XMPP服务器叫 Openfire ,使用MINA 作为下层的网络I/O框架
+					
+			Stomp	Streaming Text Orientated Message Protocol 流文本定向消息协议 是一种纯文本为载体的协议
+					一个标准的Stomp 协议包含 命令/信息关键字   头信息   文本内容
+					Stomp Broker 只负责接受和存储客户端发来的消息,按照客户端要求转发消息,只管理客户端连接和订阅,不负责处理消息内容任何业务
+
+			MQTT    Message Queuing Telemetry  Transport 消息队列遥测协议 轻量级协议,用于基于代理的发布、订阅消息的场景 
+					定义非常简单 单次传输量少    由 IBM主导设计 
+					三部分组成:	固定消息头 可变消息头 有效载荷     固定消息头必须要有,其它的根据情况而定
+
+
+			AMQP	Advanced Message Queuing Protocol 高级消息队列协议 2014年成为新的ISO 和 IEC 国际化标准  应用层协议
+			
+			
+			JMS规范   JMS不是消息队列,也不是消息队列协议,是Java消息服务接口,是一套规范的 Java API 接口 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		

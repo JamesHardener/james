@@ -9,11 +9,27 @@
 	在VMWare的编辑-虚拟网络编辑器中将网络模式改为桥接
 3.复制出来的虚拟机 ,在局域网出现无法上网问题
 		查看网卡配置文件ifcfg-eth0 , UUID是否修改
-	
-	嫂子我哥呢 姐夫别这样 来吧小姨子
-	
-	
-	
+
+4.mybatis generator xml提示错误  
+	http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd     - URI is not registered  
+		解决方法： 鼠标点击红色字，然后Intellij出现小红灯，选择Fetch external resource即可解决 
+	 <property name="mapperLocations" value="classpath:sqlmap/*Mapper.xml"/>  *Mapper.xml"红色报错 Inspection info Spring XML model validation
+	在目标目录下新建 Mapper.xml 文件
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 			jwt  Json web token   权限验证
 	
 			 一个类中的方法移到到另一个类

@@ -1,0 +1,314 @@
+
+
+
+
+Java SE 中4大核心技术   多线程 并发处理 Socket NIO
+	java.util.concurrent
+
+第一章 缓冲区的使用
+
+	NIO 概述
+		常规的I/O 阻塞 效率低
+		NIO 对常规I/O 使用的byte[] 和char[]进行封装,采用 ByteBuffer类操作数据 结合针对File或Socket技术的Channel 采用同步非阻塞 实现高性能处理
+		主流高性能服务处理框架Netty通过封装NIO实现
+	
+	缓冲区介绍 
+	
+		传统的I/O流API常常把 InputStream OutputStream Reader Writer联合使用,字节流数据存放byte[],字符流数据存放char[],但是Java语言对Array数组操作API非常少,只能自己实现.
+		
+		NIO中的缓冲区 Buffer类 可以很好实现  java.nio.Buffer   是一个抽象类,具有7个直接子类,ByteBuffer CharBuffer DoubleBuffer FloatBuffer IntBuffer LongBuffer ShortBuffer
+			注意: 没有BooleanBuffer 子类
+					java.lang.StringBuffer 在lang包下,nio包下没有 StringBuffer这个类,字符串缓存 可以使用 CharBuffer类
+		
+	Buffer类		JDK(1.8.0_92)
+		
+		7个子类也是抽象类, 实现方式 是  静态方法wrap()  将数组放入缓冲区,来构建不同数据类型的缓冲区   
+		注意: 缓冲区 是  非线程安全的 
+		
+		NIO 技术的缓冲区中,存在4个核心技术点
+			capacity 容量   limit 限制 		position 位置   mark  标记
+			值 大小关系     0 <= mark  <=	position 	<=	limit	<=	capacity
+				capacity 代表包含元素的数量,缓冲区的capacity不能为负数,并且不能更改.
+				int capacity()		返回 此 缓冲区的容量    (buf.langth属性值)
+				ByteBuffer类缓冲区的 技术原理是 使用byte[]数组保存数据,在后续使用指定API 来操作数组 达到 操作缓冲区的目的
+				调用的是 父类中的buf字节数组变量 ,执行子类中重写的方法
+			
+			int limit()		返回此 缓冲区的 限制
+			Buffer limit(int newLimit)		设置 缓冲区的限制
+				限制:	第一个不应该读取或写入元素的index(索引),不能为负数,不能大于capacity
+			
+			int position()	返回此 缓冲区的 位置
+			Buffer position(int newPosition)	设置此 缓冲区的新的 位置
+				位置:	下一个 要读取 或写入元素的 index(索引)	,不能为负数,不能大于limit 若mark 已定义 且 大于 新的position,则丢弃mark
+			
+			int remaining()	返回当前位置 与 limit 之间的元素 个数
+				
+			Buffer mark()	在 此 缓冲区设置 标记
+				标记的 作用: 一个索引,在调用 reset()方法时,将缓冲区的position 位置 重置为 该索引,标记不是必须的, 类似探险爬山关键路口"路标",以便找到返回时的路
+					若mark 被丢弃后,mark值为 -1, 若mark未定义调用reset()方法,抛出InvalidMarkException 异常
+				
+			boolean isReadOnly()	告知 此缓冲区是否 为只读缓冲区
+			boolean idDirect()		判断 此缓冲区是否 为直接缓冲区
+			final Buffer clear()	还原 缓冲区到初始的状态,将 位置设置为0 限制设置为容量 丢弃标记 
+				buf.clear()  		// 准备开始在缓冲区写数据 ,		 状态还原
+				in.read(buf)  		// 	从in 开始读数据,将数据写入buf 中 
+				说明: clear()方法 不会真正清除 缓冲区中的数据	在执行写入数据代码, 新数据索引从0 开始覆盖旧数据,相当于 清除旧数据 
+			
+			final Buffer flip()		反转 此缓冲区  将限制设置当前位置 位置重置0 丢弃标记   通俗 缩小 limit 的范围
+								类似于 String.subString(0,endIndex) 方法
+			final boolean hasArray()	判断此缓冲区是否具有可访问的底层实现数组
+			
+			final boolean hasRemaining()	判断当前位置 和限制 之间是否有元素
+			
+			final Buffer rewind()		重绕此缓冲区, 位置设置为0 	丢弃标记	
+				场景: 在一系列通道 "重写或获取" 的操作之前调用此方法
+			rewind()  通俗 "标记清除 位置归0 limit不变"  没有设置限制,可以结合自定义的limit限制值 
+				场景: 常用在 重新 读取缓存区 数据 时 使用 
+			final Buffer clear()	清除此缓冲区 位置归0 限制设置为容量 丢弃标记
+				方法clear() 在对 缓冲区进行 存储数据之前 调用   通俗 一切默认
+				
+				官方帮助文档解释
+				rewind()	使缓冲区为"重新读取" 已包含的数据做好准备,限制保持不变,将位置归0	  侧重点 重新读取写入时
+				clear()		使缓冲区为一系列的通道读取或相对put(value)操作做好准备,将限制设置为容量,位置归0		侧重点 还原一切状态
+				flip()		使缓冲区为一系列的通道写入或相对get(value)操作做好准备,将限制设置当前位置,位置归0	侧重点 substring截取
+			
+			final int arrayOffset()		返回此缓冲区的底层实现数组中 第一个缓冲区的元素的偏移量,文档中标记为可选操作
+			
+			如果List中的存储ByteBuffer数据类型,可以使用List中的toArray()方法 转成ByteBuffer[] 数组类型
+				List.toArray(T[])  转换成 数组类型  
+			
+		
+			
+			
+	ByteBuffer类	
+			它是Buffer类的子类,可以被子类继承或修改,是比较重要和常用的缓冲区类
+			ByteBuffer类提供了6类操作
+				1. 以绝对或相对位置 读写单个字节的 get和put方法
+				2. 用相对批量get(byte[] dst) 方法将缓冲区中的连续字节传输到 byte{} dst 目标数组中
+				3. 用相对批量put{byte[] src} 方法将byte[] 数组或者其它字节缓冲区中的连续字节存储到 此缓冲区
+				4. 用绝对和相对getTyte 和putType 方法可以按照字节顺序在 字节序列中 读写其它基本数据类型 的 值  (数据类型自动转换)
+				5. 提供创建视图缓冲区的方法,允许将字节缓冲区 视为包含其它基本类型值的缓冲区 asCharBuffer asDoubleBuffer asFloatBuffer asIntBuffer asLongBuffer asShortBuffer
+				6. 提供对字节缓冲区 进行 压缩(compacting)  复制 duplicating 截取slicing 的方法
+				
+			字节缓冲区创建
+				可以通过 allocation() 方法创建,此方法为缓冲区的内容分配空间,或者通过wrapping方法将现有的byte[]数组包装到缓冲区中来创建
+			
+				直接字节缓冲区 JVM会在缓冲区执行本机I/O操作(内核直接访问 ) 
+					用于 保存 易受 操作系统本机I/O操作影响的大量 长时间保存的数据
+				
+				allocateDirect(inr capacity) 分配新的直接字节缓冲区, 位置归0,界限为其容量,其标记不确定(无论是否有底层实现数组)	
+						缓冲区类型为 DirecByteBuffer   capacity指字节个数,而创建IntBuffer时capacity指int值的数目,转换成字节capacity值乘以4
+						put(byte)源码:在内部使用sun.misc.Unsafe类进行值处理,Unsafe类作用直接和操作系统通信,使用不安全,仅JDK内部使用
+						
+				allocate (int capacity)  分配一个新的 非直接字节缓冲区, 新缓存位置归0 界限为其容量,标记不确定,具有一个底层实现数组,其数组偏移量为0
+							创建一个新的数组	缓冲区类型为 HeapByteBuffer 在JVM的堆中 进行数据处理
+				wrap(byte[] array) 将byte数组包装到缓存区  
+						byte修改影响缓冲区 capacity和limit为 array.length 位置归0 mark不确定 底层数组为给定数组arrayOffset为0
+				
+				wrap(byte[] array, int offset, int length) 将byte数组包装到缓存区  不具有subString方法截取的作用
+						byte修改影响缓冲区 capacity为 array.length 位置归0 limit为offset+length  mark不确定 底层数组为给定数组arrayOffset为0 
+					说明:
+						array 缓冲区中关联的字节数组 offset 设置位置值 length 影响新缓冲区界限值
+				
+				Buffer类的	每个子类都定义了两种get 读 put 写操作 分别对应 相对位置 绝对位置操作
+					相对位置操作	读取或写入一个元素时,它从当前位置开始,然后将位置增加所传输的元素数
+								若传输超限,get抛出BufferUnderflowException 		put 抛出BufferOverflowException  都没有数据传输
+								
+					绝对位置操作	采用显式元素索引,该操作不影响位置   如果索引参数超限,抛出IndexOutOfBoundException 异常
+				
+				abstract ByteBuffer put(byte b) 使用相对位置的put操作,将给定的字节 写入此缓冲区的"当前位置",然后该位置递增
+				abstract byte get		使用相对位置的get操作 读取此缓冲区"当前位置"的字节,然后该位置递增
+					
+				put(byte[] src, int offset, int length)	相对批量put方法,将给定源数组的字节传输到 此缓冲区中当前位置
+						效率更高,先检查此缓冲区是否有足够框架,不足抛出BufferOverflowException异常
+					src 缓冲区当前位置数据来源数组 offset 要读取的第一个字节在"数组中的偏移量",不是缓冲区的偏移量  length 要读取字节的数量
+					
+				get(byte[] dst, int offset, int length) 相对批量get方法 将缓冲区中当前位置的字节传输到给定目标数组
+				
+				slice()	 创建新的字节缓冲区 其内容为此缓冲区内容的共享子序列,新缓冲区内容从此缓冲区当前位置开始,内容更改,新缓冲区可见,相互独立
+					当且仅当为 直接缓冲区(只读)时,新缓冲区为直接缓冲区(只读)
+				
+				asCharBuffer  创建此字节缓冲区的视图,作为char缓冲区
+					中文乱码:
+						1. 中文转成字节数组时 使用UTF-16BE编码
+						2. GBK转换成UTF-8, UTF-8转换成ByteBuffer类型UTF-8的java.nio.HeapCharBuffer
+				
+				asDoubleBuffer	其容量和界限为此缓冲区中剩余的字节数的1/8	
+				asFloatBuffer	其容量和界限为此缓冲区中剩余的字节数的1/4	
+				asIntBuffer		其容量和界限为此缓冲区中剩余的字节数的1/4	
+				asLongBuffer	其容量和界限为此缓冲区中剩余的字节数的1/8	
+				asShortBuffer	其容量和界限为此缓冲区中剩余的字节数的1/2	
+				asCharBuffer	其容量和界限为此缓冲区中剩余的字节数的1/2
+					视图缓冲区
+						根据特定类型的值的大小进行索引 提供批量get和put方法传输值的连续序列  更高效
+					
+				order(ByteOrder bo)  设置字节的排列顺序   左边高位 右边低位
+								16位双字节 FF1A			32位 3F68415B
+					高位			FF 						3F68			
+					低位			1A						415B	
+				ByteOrder order()	获取此缓冲区的字节顺序		
+						新创建的字节缓冲区的顺序始终为 BIG_ENDIAN(从最高位到最低位有效) 在读写和创建视图缓冲区时使用此顺序
+												LITTLE_ENDIAN(从最低位有效位到最高位有效位)
+				asReadOnlyBuffer		创建共享此缓冲区的新的只读字节缓冲区
+				compact()		压缩此缓冲区,将缓冲区的当前位置和限制之间的字节复制到缓冲区的开始处	
+				
+				比较缓冲区的内容
+					1. equals()	
+						判断是不是自身,是返回true    判断是不是ByteBuffer类的实例,不是返回false  
+						判断remaining值是否一样,不一样返回false  判断两个缓冲区中position和limit之间的数据是否完全相同,不同返回false
+								
+					2. compareTo() 方法是 按字典顺序比较它们的剩余元素序列,不考虑每个序列在其对应缓冲区中起始位置
+							3个主要逻辑
+								判断两个ByteBuffer 的范围是从当前ByteBuffer对象的当前位置开始,以两个ByteBuffer对象最小的remaining值结束说明判断的是remaining的交集
+								如果在开始与结束的范围之间有一个字节不同,返回两者的减数
+								相同,返回两者的remaining减数
+								
+				ByteBuffer duplicate 		创建共享此缓冲区内容的	新的字节缓冲区				
+				
+				一旦创建缓冲区,容量不能改变 扩展缓冲区用 extendsSize  
+				ByteBuffer newByteBuffer = ByteBuffer.allocate(buffer.capacity() + extendsSize);
+					newByteBuffer.put(buffer);  
+								
+	CharBuffer 类 			提供字符缓冲区
+	
+			
+			
+			
+			
+			
+
+
+
+
+第二章 通道和FileChannel 类的使用
+	
+	通道概述	用来传输数据的通路 
+	
+	通道的层次结构		都是接口,Channel接口有很多子接口,子接口有很多的实现类
+		AsynchronousChannel接口		主要作用是 使通道支持异步IO			
+						方法	Future < V >  operation(...) 
+						回调	void operation(... A attachement , CompletionHandler< V , ? super A > handler)
+	
+	AbstractInterruptibleChannel类	提供一个可以被中断的通道基本实现类
+	
+	FileChannel类		读取 写入 映射 和操作文件的通道 永远是阻塞的操作
+
+
+第三章 获取网络设备信息
+	IP 4组8位二进制组成,总数2^32 十进制表示 0-255
+	NetworkInterface 类 常用方法
+		public String getName()		取得网络设备在操作系统中的名称  仅仅是一个代号 eth 开头,表示以太网  后面序号不一定连续 
+		public String getDisplayName()	取得设备在操作系统中的显示名称  返回字符串包含 厂商名称 网卡型号...
+		public intgetIndex()		获得网络接口的索引 >=0 ,未知为 -1
+		public boolean isUp()		判断网络接口是否已经开启并正常工作
+		public boolean isLoopback()	判断网络接口是否为localhost回调 回环接口
+			回调 回环接口 :  用于工作 并且是虚拟 计算机上并不存在
+			localhost  只是一个域名  只有通过 hosts文件解析成127.0.0.1 才能进行数据传输与通信
+		public int getMTU()	方法 返回MTU的大小  Maximum Transmission Unit 最大传输单元 单位字节 以太网默认1500,建议不要随便更改MTU,易发生丢包现象
+		public Rnumeration<NetworkInterface> getSubInterfaces()		取得子接口 子接口作用:在不添加新的物理网卡的基础上,基于原有网络接口设备创建一个虚拟的网络接口设备进行通信,Windows不支持,Linux支持
+		public boolean isVitual()	判断当前接口是否为 虚拟子接口
+		public NetworkInterface getParent()		获得父接口
+		public byte[]	getHardwareAddress()	获得网卡的硬件地址  即物理地址 MAC
+		public Enumeration <InetAddress>	getInetAddress()	获得绑定到此网络接口的InetAddress 列表 返回泛型 Enumeration <InetAddress>
+		public java.util.List<InterfaceAddress>	getInterfaceAddresses()	获取网络接口的 InterfaceAddress 列表 通过InterfaceAddress类中的方法可以获取网络接口对应的IP地址 子网掩码 广播地址
+		public boolean idPointToPoint()		判断当前网络设备 是否为点对点设备  通过拨号或专线建立点对点连接发送数据 成为 主机网桥 路由器 之间简单连接的通信解决方案
+		public boolean supportMulticast()	判断当前网络设备是否支持多播 
+					单播:	单台主机和单台主机之间通信
+					广播:	单台主机和网络中所有主机之间通信
+					组播:	单台主机和选中的一组主机之间通信
+		 
+	NetworkInterface 类的静态方法
+		public static NetworkInterface getByIndex(int index )		根据指定索引获取 NetworkInterface对象
+		public static NetworkInterface getByName(String name)		根据name获取 NetworkInterface对象
+		public static NetworkInterface getByInetAddress(InetAddress addr)   根据指定InetAddress 对象获取NetworkInterface
+		
+	
+
+
+第四章 实现 Socket通信
+
+	基于TCP的Socket通信
+	
+	
+	ServerSocket类
+	
+	Socket类
+	
+	基于UDP的Socket通信
+
+
+
+第五章  选择器的使用
+
+	选择器与I/O多路复用
+		一个线程对多个已经就绪的通道进行选择,然后进行数据处理,属于1对多关系,JDK源码中每注册1023个通道增加一个新的线程
+			注意:不是用For循环来判断哪个通道是否有数据需要处理 而是以操作系统底层"通知器",来通知JVM中线程 哪个通道需要处理
+			可以CMD中 使用 jps 和 jstack 来查看线程的数量
+	
+	核心类Selector  SelectionKey  SelectableChannel 
+			Selector类抽象类 它是 SelectableChannel 对象的多路复用 SelectableChannel类,具有register(Selector sel, int ops)方法 将当前的SelectableChannel通道注册到指定的选择器
+			SelectableChannel类 它是抽象类,由选择器决定哪个通道的数据需要处理  SelectableChannel类与FileChannel类平级,都继承自 AbstractInterruptibleChannel
+			
+	通道类 AbstractInterruptibleChannel类 与接口 InterceptibleChannel
+			AbstractInterruptibleChannel 类实现了InterruptibleChannel接口,作用是使通道能以异步的方式 进行关闭和中断
+	
+	通道类 SelectableChannel 
+		只是从父类AbstractInterruptibleChannel 进行继承并进行扩展
+	
+	通道类 AbstractSelectableChannel类   定义了处理通道注册 注销 关闭机制的各种方法 维持当前通道的阻塞模式和当前的选择键集SelectionKey
+		只是从父类 SelectableChannel 进行继承并进行扩展
+
+	通道类 ServerSocketChannel 与 接口 NetworkChannel
+		AbstractSelectableChannel类 的子类包含ServerSocketChannel 抽象类 ,ServerSocketChannel实现了 接口 NetworkChannel ,它的作用是针对面向流的侦听套接字的可选择通道
+		
+	ServerSocketChannel 类 Selector 和 SelectionKeyServerSocketChannel
+			ServerSocketChannel 类不能直接实例化,但是能够通过 public static ServerSocketChannel open()方法来 创建 ServerSocketChannel 类的实例 open是静态的,作用是打开套接字通道,在接受连接之前必须通过某个套接字的bind方法将其绑定到具体地址
+			
+	Selector 类的使用	作为 SelectableChannel对象的多路复用器
+	
+	
+	SelectionKey类的使用 	表示 SelectableChannel 在选择器中的注册标记
+	
+	DatagramChannel 类的使用   面向DatagramSocket的可选择通道
+	
+	Pipe.SinkChannel 和 Pipe.SourceChannel    都需要使用Pipe类 
+		Pipe.SinkChannel	类表示Pipe的可写入结尾的通道
+		Pipe.SourceChannel 	类表示Pipe的可读取结尾的通道
+	
+	SelectorProvider类   是 用于选择器和可选择通道的服务 提供者类
+	
+	只有使用选择器,才算使用NIO 通过实现I/O多路复用 大大节省CPU资源 大幅减少多个线程上下文的切换时间 提高运行效率
+
+
+
+第六章 AIO
+	
+	AsynchronousFileChannel 类的使用  读取 写入 和操作文件的异步通道
+	
+	
+	AsynchronousServerSocketChannel 和 AsynchronousSocketChannel
+		AsynchronousServerSocketChannel 类是面向流的 侦听套接字的异步通道
+
+	同步 异步 阻塞 和非阻塞之间的关系
+	
+	NIO 是同步不阻塞
+	普通的InputStream 和 OutoutStream 是 同步阻塞
+	异步和同步 关注的是 消息通信机制		 阻塞和非阻塞 关注的是 程序等待 调用结果时的状态       文件通道永远是 阻塞的 
+
+	①	发起IO	请求  (阻塞和非阻塞)			② 实际IO操作 (同步或异步)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
