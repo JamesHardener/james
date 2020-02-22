@@ -1,8 +1,47 @@
 Dubbo 原理分析
-
-
-
-
+	
+	节点角色
+	
+		Provider	提供者公开远程服务
+		Consumer	消费者致电远程服务
+		Registry	注册表负责服务发现和配置
+		Monitor	监视器计算服务调用的数量和耗时
+		Container	容器管理服务的生命周期
+	服务关系
+	
+		0. Container负责启动，加载和运行服务Provider。
+		1. ProviderRegister在启动时向其注册服务。
+		2. Consumer从Register启动时开始订阅所需的服务。
+		3. Register将Providers列表返回到Consumer，更改时，Register将Consumer通过长连接将更改后的数据推送到。
+		4. ConsumerProvider根据软负载平衡算法选择s 之一并执行调用，如果失败，它将选择另一个Provider。
+		5. 两者Consumer和Provider都会计算内存中调用服务的次数和耗时，并将统计信息发送到Monitor每分钟。
+		
+		Dubbo具有以下功能：连接性，鲁棒性，可伸缩性和可升级性
+		
+		连接性
+			Register负责注册和搜索服务地址（例如目录服务），Provider并且Consumer仅在启动期间与注册表交互，并且注册表不会转发请求，因此压力较小
+			“监视器”负责计算服务调用的数量和耗时，统计信息将首先在Provider和Consumer的内存中汇总，然后发送到Monitor
+			“提供商”将服务注册到“注册”，并将耗时的统计信息（不包括网络开销）报告给“监控器”
+			“消费者”从中获取服务提供商的地址列表，Registry根据LB算法直接致电提供商，向上报耗时的统计信息Monitor，其中包括网络开销
+			之间的连接Register，Provider并且Consumer是长连接，Moniter是一个例外
+			RegisterProvider通过长连接意识到存在，当断开连接时Provider，Register会将事件推送到Consumer
+			它不影响已经运行的实例Provider和Consumer甚至全部的Register和Monitor趴下，因为Consumer得到的缓存Provider上榜
+			Register并且Monitor是可选的，Consumer可以Provider直接连接
+		坚固性
+			Monitor的停机时间不会影响使用情况，只会丢失一些采样数据
+			当数据库服务器关闭时，Register可以通过检查其缓存将服务Provider列表返回到Consumer，但是新服务器Provider无法注册任何服务
+			Register 是一个对等集群，当任何实例出现故障时，它将自动切换到另一个集群
+			即使所有Register实例都发生故障，Provider并且Consumer仍然可以通过检查其本地缓存来进行通信
+			服务Provider是无状态的，一个实例的停机时间不会影响使用情况
+			Provider一个服务的所有s故障后，Consumer无法使用该服务，并无限地重新连接以等待服务Provider恢复
+			可扩展性
+		
+		可扩展性
+			Register 是一个可以动态增加其实例的对等群集，所有客户端将自动发现新实例。
+			Provider是无状态的，它可以动态地增加部署实例，并且注册表会将新的服务提供者信息推送到Consumer。
+		
+		可升级性
+			当服务集群进一步扩展并且IT治理结构进一步升级时，需要动态部署，并且当前的分布式服务体系结构不会带来阻力。
 
 
 

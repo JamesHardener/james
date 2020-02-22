@@ -389,5 +389,14 @@ Mybatis
 				jkUserList.add(two);
 				session.insert("insertjkUserList",jkUserList);
 				session.commit();
+				
+	缓存 
+			一级缓存	是SqlSession级别 同一SqlSession执行2次相同SQL,第2次之间读缓存   当执行过 insert delete update 并提交到数据库 或 SqlSession结束后  一级缓存不存在了
+			
+			二级缓存	mapper级别 多个SqlSession会公用 二级缓存 使用同一个Mapper的SQL 操作数据库 获取的数据存放到二级缓存中  Mybatis默认没有开启
+						mybatis-config.xml 中开启 二级缓存   注意 <settings> 元素必须放在 properties 元素之后   typeAliases元素之前
+							<settings>
+								<setting name = "cacheEnabled" value = "true" />
+							</settings>	
 					
 					

@@ -1,0 +1,76 @@
+B站御风大世界
+
+	1. 多个JDK版本
+		1.) 导入项目时指定JDK版本
+		2.)在当前Module 上按 F4快捷键 打开 Project Structure 选项卡
+			Modules ---  模块名 ---  Sources 	  ---   Language level ---   java 1.8
+								---  Dependencies ---   Module SDK ---   java 1.8
+								
+	2. 项目管理
+
+		业务    订单系统...
+		
+		环境	JDK版本 + Maven版本 ...
+								
+	3. 导入eclipse 项目 
+		File ---  New ---  Module from Existing Sources --- 选择项目 ---Maven 导入
+		
+		导出 到 eclipse  
+			File ---  Export Project to Eclipse --- 在Src下 会有带有eclipse标志的项目
+			
+	4. 	数据库管理 (mysql)
+		
+		右侧边栏目 ---  Database --- +号 --- Data Source --- mysql ---  name ---  
+					--- Host  User  Password Database ---  test Connection --- success
+					--- Console ---  输入 SQL 调试
+	5.  替换 terminal 使用 git Bash
+		Ctrl + Alt + S --- Settings --- Tools --- Terminal --- Shell path --- Git\bin\bash.exe
+		
+	6.  debug 技巧
+		 breakPoint
+			行断点				具体的行 左键 红色的圆圈
+			详细设置断点		黄色的圆圈 打开选项面板可以设置 Condition     圆圈右键 在 Suspend中有 ALL 和 Thread
+			方法断点			在进入 和 退出 方法时 都会打断点停顿  应用 如接口有多个实现类,接口打断点之后会进入到具体实现类
+			异常断点			Ctrl + Shift + F8 (View Breakpoints)  ---  +号 --- Java Exception Breakpoints --- NullPoniterException 在抛出异常之前停顿到行
+			字段断点			红色眼睛 跟字段相关的操作都会停顿   右键红色眼睛 watch中 勾选 Field access 所有相关的get操作也会停顿
+				
+	7.  多线程调试
+			注意 保证所有线程线程都可以被暂停 右击断点圈 suspend 选项选择 Thread(仅在多线程调试的时候其它用all)  , ALL 不能保证所有的线程都被暂停
+
+	8.  断点回滚
+			Frames 左下角 选项  Drop Frame  退回调用之前的代码  F8 进入调试
+			动态设置运行时的值   Variables --- P --- age --- 右键Set value... --- 输入值 18 
+
+	9.  断点设置表达式
+			模拟循环中,i(捕获异常的值)出现异常的时候场景
+				循环第一行打一个断点,右键 ---  Condition --- 输入i==30  --- done ---  断点上出现 ?
+			Alt + F8  打开Evaluate  --- Expression 中输入 表达式p.getAge() ---  Evaluate
+			Run --- Reload Changed Classes  重新加载类 应用场景: 当修改了类的字段时
+	10. 避免操作资源
+			场景: 当发现debug后,不希望程序往下进行如(DB操作 MQ操作 Redis操作)
+			解决方法: 程序运行到某一行后 在左下角Frames选项中 右键 --- Force Return
+
+	11. 远程调试
+			① Maven 执行 clean 和 install 后 --- Run Configuration --- Remote  --- Name --- Command line arguments for remote JVM ---JDK版本 --- 复制Ctrl + C --- Apply --- OK
+			② 命令行进入target目录  发布项目 记录端口号 和 IP
+			③ remote-debug 启动,本地某一行打断点
+			④ 浏览器远程访问项目,查看本地是否进入断点
+			
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	

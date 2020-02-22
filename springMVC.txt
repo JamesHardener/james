@@ -262,9 +262,43 @@ SpringMVC数据校验
 					
 					
 					
+			SpringMVC 文件上传下载
 					
+					MultipartResolver接口,用于处理上传请求,将上传请求包装成可以直接获取文件的数据,它有2个实现类
+						StandardServletMultipartResolver 基于Servlet 3.0 标准的上传方式, 是Spring 3.1版本后的产物 不依赖第三方包
 
+						CommonsMultipartResolver  使用Apache 的commons-fileupload完成具体的上传操作,可以在spring各个版本中使用 依赖第三方包
 
+					下载jar   http://commons.apache.org/proper/ 下载 commons-fileupload-1.3.3.jar 和 commons-io-2.6.jar   
+						
+					上传单个步骤:
+							1. 新建项目后,复制jar包到WebContent\WEB-INF\lib 目录下 并buildpath 到 Labrary 
+							2. 指定 CommonsMultipartResolver 该Bean的 id 是 multipartResolver  通过<property> 配置 允许上传的 大小和编码格式 resolveLazily延迟文件解析  defaultEncoding  MaxInMemorySize
+							3. 新建表单 上传文件 以POST格式提交 到一个命名为/fileUpload 的请求中
+							4. 在controller包中新建 FileUploadController 类 添加fileUpload方法 处理上传文件
+									@Controller
+									public class FileUploadController {
+										@RequestMapping(value = "/fileUpload")
+										public String fileUpload(@RequestParam(value="file",required=false) MultpartFile file ,HttpServletRequest request , ModelMap model){
+											// 服务器端upload文件夹物理路径
+											String path = request.getSession().getServletContext().getRealPath("upload");
+											// 获取文件名
+											String fileName = file.getOriginalFilename();
+											// 实例化一个File对象, 表示目标文件 包含物理路径
+											File targetFile = new File(path , fileName);
+											if(!targetFile.exists()) targetFile.mkdirs; 
+											try{
+												// 将上传文件保存到 服务器指定位置
+												file.transferTo(targetFile);
+											}catch(Exception e){
+												e.printStackTrace();
+											}
+											model.put("fileUrl",request.getContextPath()+"/upload/"+fileName);
+											return "success";
+										}
+									}
+							5. 发布项目启动Tomcat 浏览 按钮上传文件,后台查看是否上传成功
+							
 
 
 	

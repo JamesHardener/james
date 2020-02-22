@@ -83,16 +83,128 @@ Spingboot 热部署
 			pom.xml文件上，右击run as ---- > Maven install
 			打包好的war 复制到Tomcat下的WebAPP里面，重启Tomcat，在浏览器访问的时候路径前 加上war的名字
 
+	Html			静态资源如 html js css img 等 放在 resources --- static --- 下 默认是不需要配置的
 
 
-
-	Freemarker		文件默认在 以ftl 结尾 , 放在 resources --- templates 文件夹下,可以不用配置
-		
+	Freemarker		文件默认在 以ftl 结尾 , 放在 resources --- templates 文件夹下,可以不用配置  控制器返回值不需要加后缀 默认配置ftl
+			spring-boot-starter-freemarker   
 
 	Mybatis 
-			mybatis-spring-boot-starter 	   		mysql-connector-java 
+		pom.xml中
+			org.mybatis.spring.boot
+			mybatis-spring-boot-starter 	   		
+			 1.3.0
+			
+			mysql
+			mysql-connector-java 
+			runtime
+		application.properties中 添加配置mysql	
+			spring.datasource.url=jdbc:mysql://localhost:3306/boot
+			spring.datasource.username=root
+			spring.datasource.password=123456
+			spring.datasource.driver-class-name=com.mysql.jdbc.Driver
+			
+			mybatis.mapper-locations=classpath:mappers/*.xml
+			mybatis.type-aliases-package=cn.bywind.boot.model
+			
+		resources 下新建 mappers	mapper.xml存放路径
+		BootApplication 添加@MapperScan("cn.bywind.boot.dao")	帮助springboot找到mapper接口
+			
+	开启事务
+		
+		一. 简单配置
+		1.  BootApplication 添加@EnableTransactionManagement 注解
+		2.  实现类(方法) 添加@Transactional()注解 	属性 传播机制(支持 新启事务) 和 隔离级别(重复度 幻想读 脏读 ) 超时 回滚
+			 
+		二. 统一配置事务
+			SpringMVC中事务控制,扫描maper.xml文件
+		<tx:advice id="txAdvice" transaction-manager="txManager" >
+			<!-- 配置这个事务建议的属性 -->	
+			<tx:attributes>
+				<!-- 指定所有 get开头的方法执行在只读事务上下文中 -->	
+				<tx:method name="get" read-only="true" />
+				<!-- 其余方法执行在默认的读写上下文中 -->	
+				<tx:method name="*" />
+			</tx:attributes>	
+		</tx:advice>	
+			
+		<!-- 定义一个切面 它匹配FooService接口定义的所有操作 -->	
+		<aop:config>		
+			<!-- aop:pointcut 元素定义AspectJ的切面表示法  -->	
+			<aop:pointcut id="fooSerciceOperation" expression="execution(* x.y.service.FooService.*(..))" />
+			<!-- 然后我们用一个通知器 aop:advisor 把这个切面 和 tx:advice 绑定在一起 -->	
+			<aop:advisor advice-ref="txAdvice" pointcut-ref="fooSerciceOperation" />
+		</aop:config>	
+			
+		三. Aspect	注解 配置 TransactionAdviceConfig 类 添加@Configuration Aspect注解
+			pom.xml 添加依赖 spring-boot-starter-aop
+			...
+			确认数据库引擎是否是InnoDB 支持事务
 			
 			
+	集成Redis缓存
+		主流nosql数据库
+			临时性键值存储  Memcached  Redis
+			永久性键值存储	Tokyo Tyrant  Flare  ROMA  Redis 
+			面向文档数据库	MangoDB  CouchDB
+			面向列的数据库	Cassandra HBase HyperTable
+		
+		主流Redis优点 
+			速度快 支持数据类型丰富(string list set sorted set  hash) 支持事务 丰富的特性可用于缓存 消息...
+			
+		Redis.io官网  Try it  interactive tutorial  gethub 下载.msi 或者 zip
+			
+		1. pom.xml 引入 redis依赖 spring-boot-starter-data-redis 
+		2. application.properties中 添加redis配置  之后可以直接使用提供的redisTemplate
+			## redis 
+			# 连接池最大连接数(使用负值表示没有限制)
+			spring.redis.jedis.pool.max-active=8
+			# 连接池最大阻塞等待时间(使用负值表示没有限制)
+			spring.redis.jedis.pool.max-wait=-1
+			# 连接池最大空闲连接
+			spring.redis.jedis.pool.max-idle=8 
+			# 连接池最小空闲连接
+			spring.redis.jedis.pool.min-idle=0
+			# 连接超时时间(毫秒)
+			spring.redis.timeout=200
+			
+	定时任务 和 Quartz  当当网elastic-job
+		
+		1. springboot自带的 @EnableScheduling 支持定时任务 具体方法添加 @Scheduled(cron="0/2 * ***"表达式) 注解
+			配置类 添加注解 @Configuration @EnableAsync 
+					@Configuration 
+					@EnableAsync
+					public class AsyncConfig{
+						private int corePoolSize = 10;
+						private int maxPoolSize = 200;
+						private int queueCapacity = 10;
+						@Bean
+						public Executor taskExecutor(){
+							ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+							executor.setCorePoolSize(corePoolSize);
+							executor.setMaxPoolSize(maxPoolSize);
+							executor.setQueueCapacity(queueCapacity);
+							executor.initialize();
+							return executor;
+						}	
+					}
+				@Component
+				public class TestJob{
+					@Scheduled(cron = "0/2 * * * * *")
+					public void job(){
+						System.out.println("bywind is cool");
+					}
+				}
+				
+		2. quartz 定时任务框架 (Cron表达式)
+			pom.xml 引入依赖 spring-boot-starter-quartz   测试类继承QuartzJobBean  配置测试任务项类
+
+
+
+
+
+
+	
 			
 01 我是谁?
 
@@ -169,9 +281,16 @@ Spingboot 热部署
 
 
 
-
-
-
+职业技能
+	
+	0. 熟悉Java网络编程了解 Bio Nio Aio,并发编程,有JVM调优经验
+	1. 熟悉Spring对IOC AOP等有深入了解
+	2. 熟悉Mybatis对Mybatis的初始化 接口代理 日志 缓存 反射 执行器 插件等有深入了解
+	3. 精通Redis的开发和设计,熟悉其数据结构及底层实现机制,了解主从 哨兵 集群的使用和原理，了解Lua
+	4. 熟悉Mysql的开发，设计及调优,熟悉其底层数据结构，有多个数据库设计及建模经验
+	5. 熟悉Tomcat的使用和部署，了解Docker容器
+	6. 有Linux Git Maven Nginx 等部署和商业项目经验
+	7. 了解微服务理念,熟悉Zookeeper服务治理,熟悉消息中间件使用场景,熟悉SpringBoot SpringCloud
 
 
 
