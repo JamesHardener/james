@@ -1,0 +1,349 @@
+﻿录音问题记录
+1. 自我介绍  不流畅 项目介绍不好  
+2. 为什么使用Redis  效率
+3. 用户数量		产品数量     
+4. 查询每个部门 收入最高 SQL
+5. redis 部署方式      redis哨兵   主从复制    Redis数据结构   Redis分布式锁 怎么实现
+6 基础  AOP和IOC  
+		控制反转和依赖注入（IOC）
+
+		Spring的IOC就是当调用者要使用被调用者时，spring容器会创建被调用者实例，无需调用者自行创建，然后进行依赖注入（@Autowired）
+		
+		面向切面编程（AOP）可以说是对OOP（面向对象编程）的补充和完善    面向切面（AOP）拦截是到方法级别的，面向对象编程拦截是到对象级别的
+			公共的日志处理，权限处理，事务之类的代码往往分散于很多功能逻辑代码中，产生大量重复代码
+			 提供声明式事务管理、支持用户自定义的切面
+		
+			
+		常见的Annotatiion  
+			meta-annotation（元注解）
+				Target注解的作用是：描述注解的使用范围 	packages、types（类、接口、枚举、注解类）、类成员（方法、构造方法、成员变量、枚举值）、方法参数和本地变量（如循环变量、catch参数），
+								在定义注解类时使用了@Target 能够更加清晰的知道它能够被用来修饰哪些对象，它的取值范围定义在ElementType 枚举中
+				Reteniton注解的作用是：描述注解保留的时间范围
+				Documented注解的作用是：描述在使用 javadoc 工具为类生成帮助文档时是否要保留其注解信息。
+				Inherited注解的作用是：使被它修饰的注解具有继承性
+				
+				
+			Annotation(注解)  注解可以标记在包、类、属性、方法，方法参数以及局部变量上，且同一个地方可以同时标记多个注解。
+			Spring部分
+
+			1、声明bean的注解
+
+			@Component 组件，没有明确的角色
+
+			@Service 在业务逻辑层使用（service层）
+
+			@Repository 在数据访问层使用（dao层）
+
+			@Controller 在展现层使用，控制器的声明（C）
+
+		2、注入bean的注解		都可以注解在set方法和属性上，推荐注解在属性上（一目了然，少写代码）。
+
+			@Autowired：由Spring提供
+
+			@Inject：由JSR-330提供
+
+			@Resource：由JSR-250提供
+
+		3、java配置类相关注解
+
+			@Configuration 声明当前类为配置类，相当于xml形式的Spring配置（类上）
+
+			@Bean 注解在方法上，声明当前方法的返回值为一个bean，替代xml中的方式（方法上）
+
+			@Configuration 声明当前类为配置类，其中内部组合了@Component注解，表明这个类是一个bean（类上）
+
+			@ComponentScan 用于对Component进行扫描，相当于xml中的（类上）
+
+			@WishlyConfiguration 为@Configuration与@ComponentScan的组合注解，可以替代这两个注解
+
+		4、切面（AOP）相关注解
+
+			Spring支持AspectJ的注解式切面编程。
+
+			@Aspect 声明一个切面（类上）	使用@After、@Before、@Around定义建言（advice），可直接将拦截规则（切点）作为参数。
+
+			@After 在方法执行之后执行（方法上）
+			@Before 在方法执行之前执行（方法上）
+			@Around 在方法执行之前与之后执行（方法上）
+			@PointCut 声明切点	在java配置类中使用@EnableAspectJAutoProxy注解开启Spring对AspectJ代理的支持（类上）
+		5、@Bean的属性支持
+			@Scope 设置Spring容器如何新建Bean实例（方法上，得有@Bean）其设置类型包括：
+				Singleton （单例,一个Spring容器中只有一个bean实例，默认模式）,
+				Protetype （每次调用新建一个bean）,
+				Request （web项目中，给每个http request新建一个bean）,
+				Session （web项目中，给每个http session新建一个bean）,
+				GlobalSession（给每一个 global http session新建一个Bean实例）
+
+				@StepScope 在Spring Batch中还有涉及
+				@PostConstruct 由JSR-250提供，在构造函数执行完之后执行，等价于xml配置文件中bean的initMethod
+				@PreDestory 由JSR-250提供，在Bean销毁之前执行，等价于xml配置文件中bean的destroyMethod
+		6、@Value注解	@Value 为属性注入值（属性上）
+		
+		SpringMVC部分
+			@EnableWebMvc 在配置类中开启Web MVC的配置支持，如一些ViewResolver或者MessageConverter等，若无此句，重写WebMvcConfigurerAdapter方法（用于对SpringMVC的配置）。
+
+			@Controller 声明该类为SpringMVC中的Controller
+
+			@RequestMapping 用于映射Web请求，包括访问路径和参数（类或方法上）
+
+			@ResponseBody 支持将返回值放在response内，而不是一个页面，通常用户返回json数据（返回值旁或方法上）
+
+			@RequestBody 允许request的参数在request体中，而不是在直接连接在地址后面。（放在参数前）
+
+			@PathVariable 用于接收路径参数，比如@RequestMapping(“/hello/{name}”)申明的路径，将注解放在参数中前，即可获取该值，通常作为Restful的接口实现方法。
+
+			@RestController 该注解为一个组合注解，相当于@Controller和@ResponseBody的组合，注解在类上，意味着，该Controller的所有方法都默认加上了@ResponseBody。
+
+			@ControllerAdvice 通过该注解，我们可以将对于控制器的全局配置放置在同一个位置，注解了@Controller的类的方法可使用@ExceptionHandler、@InitBinder、@ModelAttribute注解到方法上，
+				这对所有注解了 @RequestMapping的控制器内的方法有效。
+			@ExceptionHandler 用于全局处理控制器里的异常
+			@InitBinder 用来设置WebDataBinder，WebDataBinder用来自动绑定前台请求参数到Model中。
+			@ModelAttribute 本来的作用是绑定键值对到Model里，在@ControllerAdvice中是让全局的@RequestMapping都能获得在此处设置的键值对。
+		
+			SpringBean的 scope   分类
+				single:单例，指定bean容器只有一份，即context中只有一个。
+				prototype：每次请求创建新的实例，destroy方式不生效。
+				request：每次http请求创建一个实例且在当前request内有效
+				session： 同上，当前session有效
+				global session：基于portlet的web中有效，如果是在web中，同session
+			
+		工厂模式  
+			单例模式: 懒汉 恶汉模式  几种
+			饿汉式单例：在定义开始，便实例化自己 饿汉式天生线程安全
+			懒汉式单例：在第一次调用时实例化自己  非线程安全
+				解决懒汉式线程安全问题
+					1. 全局访问点加同步 
+					2. 双重检查锁定   隐患, 在于：如果两个线程同时执行getsingle(),判断 instance都不为null后, 进入if判断语句。  两次new操作
+					3. 静态内部类：既实现了线程安全，又避免了同步带来的性能影响。
+		
+		多线程   
+					① 继承Thread类实现多线程 ② 实现Runnable接口  ③ 使用ExecutorService、Callable、Future
+				启动线程    同一线程连续2次start方法  第二次 IllegalThreadStateException
+				
+		线程池 		核心线程数 		最大线程数 		队列长度   怎么产生影响
+			由于线程池corePoolSize=5，因此在线程池初始化时，就已经有5个空闲线程了，因此有4个任务同时进来时，并不会创建线程；
+			前面的4个任务都没完成，这时又进来2个队列，这时5个核心线程都用完了，还剩下1个任务，这时线程池会将剩下这个任务塞进阻塞队列中，
+			等待空闲线程执行，因此并不会创建线程；如果前面6个任务还是没有处理完，这时又同时进来了5个任务，此时还没有空闲线程来执行新来的任务，
+			所以线程池继续将这5个任务塞进阻塞队列，但发现阻塞队列已经满了，这时只能创建“临时”线程了来执行任务了，并且线程池数量最多只能拥有maximumPoolSize大小，
+			因此这时候会创建1个“临时”线程来执行任务，这里创建的线程用“临时”来描述还是因为它们不会长期存在于线程池，它们的存活时间为keepAliveTime。
+
+		集合对象 HashMap  HashTable   为什么线程安全的 效率低  竞争锁
+		
+		Java中final、finally、finalize的区别与用法
+	1.简单区别：
+		final用于声明属性，方法和类，分别表示属性不可交变，方法不可覆盖，类不可继承。
+		finally是异常处理语句结构的一部分，表示总是执行。
+		finalize是Object类的一个方法，在垃圾收集器执行的时候会调用被回收对象的此方法，供垃圾收集时的其他资源回收，例如关闭文件等。
+	2.中等区别：
+		虽然这个单词在Java中都存在，但是并没太多关联：
+		final：java中的关键字，修饰符。
+			A).如果一个类被声明为final，就意味着它不能再派生出新的子类，不能作为父类被继承。因此，一个类不能同时被声明为abstract抽象类的和final的类。
+			B).如果将变量或者方法声明为final，可以保证它们在使用中不被改变.
+　　		1)被声明为final的变量必须在声明时给定初值，而在以后的引用中只能读取，不可修改。 
+　　		2)被声明final的方法只能使用，不能重载。
+		finally：java的一种异常处理机制。
+　　		finally是对Java异常处理模型的最佳补充。finally结构使代码总会执行，而不管无异常发生。使用finally可以维护对象的内部状态，并可以清理非内存资源。特别是在关闭数据库连接这方面，如果程序员把数据库连接的close()方法放到finally中，就会大大降低程序出错的几率。
+		finalize：Java中的一个方法名。
+			Java技术使用finalize()方法在垃圾收集器将对象从内存中清除出去前，做必要的清理工作。这个方法是由垃圾收集器在确定这个对象没被引用时对这个对象调用的。它是在Object类中定义的，因此所的类都继承了它。子类覆盖finalize()方法以整理系统资源或者执行其他清理工作。finalize()方法是在垃圾收集器删除对象之前对这个对象调用的。
+
+	锁 悲观锁 乐观锁 区别
+		悲观锁：一段执行逻辑加上悲观锁,不同线程同时执行时,只能有一个线程执行,其他的线程在入口处等待,直到锁被释放。Java中synchronized和ReentrantLock等独占锁就是悲观锁思想的实现。
+		乐观锁：一段执行逻辑加上乐观锁,不同线程同时执行时,可以同时进入执行,在最后更新数据的时候要检查这些数据是否被其他线程修改了(版本和执行初是否相同),没有修改则进行更新,否则放弃本次操作。
+	
+		数据库插入 基于什么锁    悲观锁的实现主要依赖于数据库的锁机制,会显示的使用锁.
+			行共享 (ROW SHARE) – 禁止排他锁定表，与行排他类似，区别是别的事务还可以在此表上加任何排他锁。（除排他（exclusive）外）
+			行排他(ROW EXCLUSIVE) – 禁止使用排他锁和共享锁，其他事务依然可以并发地对相同数据表执行查询，插入，更新，删除操作，或对表内数据行加锁的操作，但不能有其他的排他锁（自身是可以的，没发现有什么用）
+			共享锁(SHARE) - 锁定表，对记录只读不写，多个用户可以同时在同一个表上应用此锁，在表没有被任何DML操作时，多个事务都可加锁，但只有在仅一个事务加锁的情况下只有此事务才能对表更新；当表已经被更新或者指定要更新时（select for update），任何事务都不能加此锁了。
+			共享行排他(SHARE ROW EXCLUSIVE) – 比共享锁更多的限制，禁止使用共享锁及更高的锁，在表没有被任何DML操作时，只有一个事务可以加锁，可以更新，书上说别的事务可以使用select for update锁定选中的数据行，可是实验后没被验证。
+			排他(EXCLUSIVE) – 限制最强的表锁，仅允许其他用户查询该表的行。禁止修改和锁定表
+		Java 锁 除过  其它锁
+
+  7 防止用户多次交易 
+		幂等性：就是用户对于【同一操作】发起的【一次请求或者多次请求】的【结果是一致的】，不会因为多次点击而产生了副作用。
+		分布式锁，我们可以很好的通过zookeeper来做好分布式锁，把我们的资源限定给用户。
+  
+	分库分表  
+			查询 每张表的交易金额最高的10笔 		用到子查询
+			
+			数据库索引  为什么效率变高了   什么时候加索引 
+				默认的方式是根据搜索条件进行全表扫描	帮助MySQL高效获取数据的数据结构
+				普通索引 唯一索引  主键索引 外键索引 全文索引
+				在经常需要搜索的列上  主键列 外键 
+			
+	用户信息为什么存到Redis中
+		可以极大的提高下次访问的效率
+
+	redis怎么做 高可用的 
+		实现redis高可用机制的一些方法
+			保证redis高可用机制需要redis主从复制、redis持久化机制、哨兵机制、keepalived等的支持。
+				主从复制的作用：数据备份、读写分离、分布式集群、实现高可用、宕机容错机制等。
+				
+			监控(Monitoring): 哨兵(sentinel) 会不断地检查你的Master和Slave是否运作正常	
+			提醒(Notification):当被监控的某个Redis出现问题时, 哨兵(sentinel) 可以通过 API 向管理员或者其他应用程序发送通知。
+			自动故障迁移(Automatic failover):当一个Master不能正常工作时，哨兵(sentinel) 会开始一次自动故障迁移操作,它会将失效Master的其中一个Slave升级为新的Master,
+			 并让失效Master的其他Slave改为复制新的Master; 当客户端试图连接失效的Master时,集群也会向客户端返回新Master的地址,使得集群可以使用Master代替失效Master。
+
+			哨兵机制端口号默认为26379
+			Redis Sentinel 是一个分布式架构，其中包含若干个 Sentinel 节点和 Redis 数据节点，每个 Sentinel 节点会对数据节点和其余 Sentinel 节点进行监控，
+				当它发现节点不可达时，会对节点做下线标识。如果被标识的是主节点，它还会和其他 Sentinel 节点进行“协商”，当大多数 Sentinel 节点都认为主节点不可达时，
+				它们会选举出一个 Sentinel 节点来完成自动故障转移的工作，同时会将这个变化实时通知给 Redis 应用方。整个过程完全是自动的，不需要人工来介入，
+				所以这套方案很有效地解决了 Redis 的高可用问题。	
+			
+			基本的故障转移流程
+				1）主节点出现故障，此时两个从节点与主节点失去连接，主从复制失败
+				2）每个 Sentinel 节点通过定期监控发现主节点出现了故障
+				3）多个 Sentinel 节点对主节点的故障达成一致会选举出其中一个节点作为领导者负责故障转移。
+				4）Sentinel 领导者节点执行了故障转移，整个过程基本是跟我们手动调整一致的，只不过是自动化完成的。
+				5）故障转移后整个 Redis Sentinel 的结构,重新选举了新的主节点。
+				
+
+ 
+		
+		  
+		  linux 掌握  查找线程  ps/top  杀掉线程 kill
+			 ps -ef | grep java   ps 命令用于查看当前正在运行的进程	grep 是搜索
+			 ps -aux | grep java		-aux 显示所有状态
+			  kill -9 [PID]			-9 表示强迫进程立即停止		通常用 ps 查看进程 PID ,用 kill 命令终止进程
+
+		Git大小写敏感吗  
+			① 不敏感 git config core.ignorecase false
+			② git mv --force myfile MyFile
+
+		怎么从新生代过渡到 老年代   内存里面的过渡   使用哪些方法进行回收 
+		JVM区域总体分两类，heap区和非heap区。 heap区又分为： 
+			- Eden Space（伊甸园）、 
+			- Survivor Space(幸存者区)、 
+			- Old Gen（老年代）
+			1个Eden区和2个Survivor区（分别叫from和to）。默认比例为8：1,
+			
+			非heap区又分： 
+			- Code Cache(代码缓存区)； 
+			- Perm Gen（永久代）； 
+			- Jvm Stack(java虚拟机栈)； 
+			- Local Method Statck(本地方法栈)
+		有关注哪些技术
+       
+	   
+		现在系统数据变成基于Redis存储系统
+			1. 登录 192.168.42.111  test test stress
+			2. Select * from "order"      --result
+			3. redis 登录  ./redis-cli -h 192.168.42.111 -p 6379 -a 12345678 
+			4. Result -----pipe ------redis 
+	
+		导表的数据
+		mysql -utest -ptest stress --default-charactrt-set-utf8 --skip-column-names --raw < order.sql | redis-cli -h 192.168.42.111 -p 6379 -a 12345678 --pipe
+
+		Redis 性能实战
+			1.  redis-benchmark -h 192.168.42.111 -p 6379 -c 100 -n 10000
+					100个并发连接 10000 个请求 检测服务器性能
+			2.  redis-benchmark -h 192.168.42.111 -p 6379 -q -d 100
+					测试存取大小为100字节的数据包的性能
+			3.  redis-benchmark -h 192.168.42.111 -p 6379 -t set,get -n 100000 -q
+					只测试 set.push 操作的性能
+			4.  redis-benchmark -h 192.168.42.111 -p 6379 -n 100000 -q script load "redis.call('set','foo','bar')"
+					只测试某些数值存取的性能
+
+		redis 特性 
+			 速度快   键值对的数据结构服务器  丰富的功能  简单稳定 持久化  主从复制  高可用和分布式转移 客户端语言多
+
+
+		持久化		备份	体积	数据还原速度  启动优先级 	适用场景			数据安全性		阻塞
+			RDB		全量	小		快				低			数据备份,默认开启		丢数据	 save阻塞, bgsave或者启动不阻塞
+			AOF		增量	大		慢				高			保存数据,默认关闭	根据策略决定 	都不阻塞
+
+		布隆过滤器 Bloom  Filter  1970年由布隆提出 ,可以用于快速检索一个元素是否在一个集合中,空间效率极高的概率型算法  它实际上是一个很长的二进制向量和一系列随机映射函数
+			算法优势:	仅仅保留数据的指纹信息,空间效率极高  查询效率极高 时间复杂度 O(n)  信息安全性较高
+			缺点:		存在一定的误判   数据删除困难
+
+		令牌桶限流算法
+			场景  系统每秒向桶放入5个令牌  桶容量5 如果桶已经满了,那么令牌丢弃 系统处理请求时,先从桶中拿到1个令牌,然后进行处理   如果令牌桶中没有令牌,则请求被限制
+			特点   没有临界问题  缓冲区  允许突发
+
+		Servlet 基础 之 9大内置对象
+			JSP对象			怎么获得
+			out				resp.getWriter
+			request 		service方法中的req参数
+			response		service方法中的resp参数
+			session			req.getSession()函数
+			application		getServletContext()函数
+			exception		Throwable
+			page			this 
+			pageContext		PageContext
+			Config 			getServletConfig 函数
+			
+		分布式锁 
+			实现 		实现思路								优点 								缺点
+			mysql		利用数据库自身锁机制,要求行级锁			实现简单 稳定可靠					性能差 无法适应高并发场景 容易死锁 无法优雅实现阻塞式锁
+			redis		基于redis的setnx命令实现,lua脚本保证
+						锁释放时对缓存操作序列的原子性			性能好								实现相对复杂 无法优雅的实现阻塞式锁
+			zookeeper	基于zk的节点特性以及watch机制实现		性能好 稳定可靠 能较好实现阻塞式锁   实现相对复杂
+			Redis分布式锁 
+				基本锁  原理 利用redis的setnx 如果不存在某个key则设置值,设置成功表示取得锁成功
+						缺点: 如果获取锁后的进程没有执行完就挂了,则锁永远不会释放
+				
+				改进型  原理 基本形式锁上setnx 后设置expire 保证超时后也能自动释放锁
+						缺点 setnx 与expire不是一个原子操作,可能执行完setnx该进程就挂了
+				
+				再改进  原理 利用Lua脚本 将setnx 与expire变成一个原子操作,可解决一部分问题
+						缺点   锁过期问题
+		
+		服务器session复制
+				优点  对应用无侵入性 不需要修改代码  能适应各种负载均衡策略 服务器重启或宕机不会session丢失  安全性较高
+				
+				缺点  session同步有延时 占用内网带宽资源  受制于内存资源 水平扩展能力差  服务器数量较多GC 序列化反序列化消耗CPU性能
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
